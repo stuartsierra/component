@@ -55,13 +55,19 @@
   (let [graph (dependency-graph system component-keys)]
     (reduce (fn [system key]
               (let [component (get system key)]
-                (assoc system key
-                       (start
-                        (reduce-kv (fn [component dependency-key system-key]
-                                     (assoc component dependency-key
-                                            (get system system-key)))
-                                   component
-                                   (dependencies component))))))
+                (try
+                  (assoc system key
+                         (start
+                          (reduce-kv (fn [component dependency-key system-key]
+                                       (assoc component dependency-key
+                                              (get system system-key)))
+                                     component
+                                     (dependencies component))))
+                  (catch Throwable t
+                    (throw (ex-info "Error starting component"
+                                    {:component component
+                                     :system system}
+                                    t))))))
             system
             (sort (dep/topo-comparator graph) component-keys))))
 
@@ -72,7 +78,13 @@
   (let [graph (dependency-graph system component-keys)]
     (reduce (fn [system key]
               (let [component (get system key)]
-                (assoc system key (stop component))))
+                (try
+                  (assoc system key (stop component))
+                  (catch Throwable t
+                    (throw (ex-info "Error stopping component"
+                                    {:component component
+                                     :system system}
+                                    t))))))
             system
             (reverse (sort (dep/topo-comparator graph) component-keys)))))
 
