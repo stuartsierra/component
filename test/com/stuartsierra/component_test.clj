@@ -98,7 +98,7 @@
 (defn component-e []
   (map->ComponentE {:state (rand-int Integer/MAX_VALUE)}))
 
-(defrecord System1 [d a c b]
+(defrecord System1 [d a e c b]  ; deliberately scrambled order
   component/Lifecycle
   (start [this]
     (log 'System1.start this)
@@ -113,7 +113,8 @@
                  :c (component-c)
                  :d (component/using (component-d)
                       {:b :b
-                       :my-c :c})}))
+                       :my-c :c})
+                 :e (component-e)}))
 
 (defmacro with-log [& body]
   `(binding [*log* []]
