@@ -4,19 +4,24 @@
 ;;; Dummy functions to use in the examples
 
 (defn connect-to-database [host port]
-  (prn "Opening database connection")
+  (println ";; Opening database connection")
   (reify java.io.Closeable
-    (close [_] (prn "Closing database connection"))))
+    (close [_] (println ";; Closing database connection"))))
 
 (defn execute-query [& _]
-  (prn 'execute-query))
+  (println ";; execute-query"))
 
 (defn execute-insert [& _]
-  (prn 'execute-insert))
+  (println ";; execute-insert"))
 
 (defn new-scheduler []
-  (prn 'new-scheduler)
-  {})
+  (reify component/Lifecycle
+    (start [this]
+      (println ";; Starting scheduler")
+      this)
+    (stop [this]
+      (println ";; Stopping scheduler")
+      this)))
 
 
 ;;; Example database component
@@ -29,6 +34,7 @@
   component/Lifecycle
 
   (start [component]
+    (println ";; Starting database")
     ;; In the 'start' method, initialize this component
     ;; and start it running. For example, connect to a
     ;; database, create thread pools, or initialize shared
@@ -39,6 +45,7 @@
       (assoc component :connection conn)))
 
   (stop [component]
+    (println ";; Stopping database")
     ;; In the 'stop' method, shut down the running
     ;; component and release any external resources it has
     ;; acquired.
@@ -76,11 +83,13 @@
   component/Lifecycle
 
   (start [this]
+    (println ";; Starting ExampleComponent")
     ;; In the 'start' method, a component may assume that its
     ;; dependencies are available and have already been started.
     (assoc this :admin (get-user database "admin")))
 
   (stop [this]
+    (println ";; Stopping ExampleComponent")
     ;; Likewise, in the 'stop' method, a component may assume that its
     ;; dependencies will not be stopped until AFTER it is stopped.
     this))
@@ -103,15 +112,17 @@
 ;; which take a set of keys naming components in the system to be
 ;; started/stopped. Order of the keys doesn't matter here.
 
+(def example-system-components [:scheduler :app :db])
+
 (defrecord ExampleSystem [config-options db scheduler app]
   component/Lifecycle
   (start [this]
-    (component/start-system this [:scheduler :app :db]))
+    (component/start-system this example-system-components))
   (stop [this]
-    (component/stop-system this [:scheduler :app :db])))
+    (component/stop-system this example-system-components)))
 
 ;; When constructing the system, specify the dependency relationships
-;; among components using the `using` function.
+;; among components with the `using` function.
 
 (defn example-system [config-options]
   (let [{:keys [host port]} config-options]
@@ -146,15 +157,38 @@
 
 (defrecord AnotherComponent [component-a component-b])
 
-(defn another-component []
-  (component/using
-    (->AnotherComponent nil nil)
-    [:component-a :component-b]))
-
 (defrecord AnotherSystem [component-a component-b component-c])
 
+(defn another-component []
+  (component/using
+    (map->AnotherComponent {})
+    [:component-a :component-b]))
 
 
+
+;; Sample usage:
+(comment
+
+(def system (example-system {:host "dbhost.com" :port 123}))
+;;=> #'examples/system
+
+(alter-var-root #'system component/start)
+;; Starting database
+;; Opening database connection
+;; Starting scheduler
+;; Starting ExampleComponent
+;; execute-query
+;;=> #examples.ExampleSystem{ ... }
+
+(alter-var-root #'system component/stop)
+;; Stopping ExampleComponent
+;; Stopping scheduler
+;; Stopping database
+;; Closing database connection
+;;=> #examples.ExampleSystem{ ... }
+
+
+)
 
 ;; Local Variables:
 ;; clojure-defun-style-default-indent: t
