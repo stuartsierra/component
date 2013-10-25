@@ -6,7 +6,8 @@
 (def ^:dynamic *log* nil)
 
 (defn- log [& args]
-  (set! *log* (conj *log* args)))
+  (when (thread-bound? #'*log*)
+    (set! *log* (conj *log* args))))
 
 (defn- ordering
   "Given an ordered collection of messages, returns a map from the
@@ -23,6 +24,9 @@
 
 (defn started? [component]
   (true? (::started? component)))
+
+(defn stopped? [component]
+  (false? (::started? component)))
 
 (defrecord ComponentA [state]
   component/Lifecycle
@@ -129,3 +133,39 @@
          'ComponentB.start 'ComponentC.start
          'ComponentC.start 'ComponentD.start
          'ComponentB.start 'ComponentD.start)))
+
+(deftest all-components-started
+  (let [system (component/start (system-1))]
+    (doseq [component (vals system)]
+      (is (started? component)))))
+
+(deftest all-components-stopped
+  (let [system (component/stop (component/start (system-1)))]
+    (doseq [component (vals system)]
+      (is (stopped? component)))))
+
+(deftest dependencies-satisfied
+  (let [system (component/start (component/start (system-1)))]
+    (are [keys] (started? (get-in system keys))
+         [:b :a]
+         [:c :a]
+         [:c :b]
+         [:d :my-c])))
+
+(defrecord ErrorStartComponentC [state a b]
+  component/Lifecycle
+  (start [this]
+    (throw (ex-info "Boom!" {:state state})))
+  (stop [this]
+    this))
+
+(defn error-start-c []
+  (component/using
+    (map->ErrorStartComponentC {:state (rand-int Integer/MAX_VALUE)})
+    [:a :b]))
+
+(deftest error-thrown-with-partial-system
+  (let [ex (try (component/start (assoc (system-1)
+                                   :c (error-start-c)))
+                (catch Exception e e))]
+    (is (started? (-> ex ex-data :system :b :a)))))
