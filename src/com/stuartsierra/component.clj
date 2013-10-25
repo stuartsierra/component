@@ -14,7 +14,7 @@
 (defn dependencies
   "Returns the map of other components on which this component depends."
   [component]
-  (::dependencies (meta component)))
+  (::dependencies (meta component) {}))
 
 (defn using
   "Associates metadata with component describing the other components
