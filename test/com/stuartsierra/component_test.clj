@@ -152,23 +152,39 @@
          [:c :b]
          [:d :my-c])))
 
-(defrecord ErrorStartComponentC [state a b]
+(defrecord ErrorStartComponentC [state error a b]
   component/Lifecycle
   (start [this]
-    (throw (ex-info "Boom!" {:state state})))
+    (throw error))
   (stop [this]
     this))
 
-(defn error-start-c []
+(defn error-start-c [error]
   (component/using
-    (map->ErrorStartComponentC {:state (rand-int Integer/MAX_VALUE)})
+    (map->ErrorStartComponentC {:error error})
     [:a :b]))
 
+(defn setup-error
+  ([]
+     (setup-error (ex-info "Boom!" {})))
+  ([error]
+     (try (component/start
+           (assoc (system-1) :c (error-start-c error)))
+          (catch Exception e e))))
+
 (deftest error-thrown-with-partial-system
-  (let [ex (try (component/start (assoc (system-1)
-                                   :c (error-start-c)))
-                (catch Exception e e))]
+  (let [ex (setup-error)]
     (is (started? (-> ex ex-data :system :b :a)))))
+
+(deftest error-thrown-with-component-dependencies
+  (let [ex (setup-error)]
+    (is (started? (-> ex ex-data :component :a)))
+    (is (started? (-> ex ex-data :component :b)))))
+
+(deftest error-thrown-with-cause
+  (let [error (ex-info "Boom!" {})
+        ex (setup-error error)]
+    (is (identical? error (.getCause ^Exception ex)))))
 
 (defrecord System2b [one]
   component/Lifecycle
