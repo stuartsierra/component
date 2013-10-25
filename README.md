@@ -274,6 +274,27 @@ can add the metadata in the component's constructor:
 ```
 
 
+### Errors
+
+While starting/stopping a system, if any component's `start` or `stop`
+method throws an exception, the `start-system` or `stop-system`
+function will catch and wrap it in an `ex-info` exception with the
+following keys in its `ex-data` map:
+
+* `:system` is the current system, including all the components which
+  have already been started.
+
+* `:component` is the component which caused the exception, with its
+  dependencies already `assoc`'d in.
+
+The original exception which the component threw is available as
+`.getCause` on the exception.
+
+'Component' makes no attempt to recover from errors in a component,
+but you can use the system attached to the exception to clean up any
+partially-constructed state.
+
+
 ### Reloading
 
 I developed this pattern in combination with my "reloaded" [workflow].
