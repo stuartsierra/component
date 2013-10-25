@@ -313,7 +313,7 @@ started or stopped.
 
 'Component' does not require that stop/start be idempotent, but it can
 make it easier to clean up state after an error, because you can call
-`stop` indescriminately on everything.
+`stop` indiscriminately on everything.
 
 In addition, you could wrap the body of `stop` in a try/catch that
 ignores all exceptions.
@@ -321,7 +321,7 @@ ignores all exceptions.
 ```clojure
 (try ;; ...
   (catch Throwable t
-    (log/warn t "Error when stoppnig component")))
+    (log/warn t "Error when stopping component")))
 ```
 
 That way, errors stopping one component will not prevent other
