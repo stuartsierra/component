@@ -88,7 +88,7 @@ Components are a tool to help with that.
 
 ### Creating Components
 
-To define a component, define a Clojure record that implements the
+To create a component, define a Clojure record that implements the
 `Lifecycle` protocol.
 
 ```clojure
@@ -117,9 +117,9 @@ To define a component, define a Clojure record that implements the
     component))
 ```
 
-Optionally, provide a constructor function that takes in
-the essential configuration parameters of the component,
-leaving the runtime state blank.
+Optionally, provide a constructor function that takes arguments for
+the essential configuration parameters of the component, leaving the
+runtime state blank.
 
 ```clojure
 (defn new-database [host port]
@@ -206,11 +206,6 @@ among components with the `using` function.
               (example-component config-options)
               {:database  :db
                :scheduler :scheduler})})))
-;;             ^          ^
-;;             |          |
-;;             |          \- Keys in the ExampleSystem record
-;;             |
-;;             \- Keys in the ExampleComponent record
 ```
 
 `using` takes a component and a map telling the system where to
@@ -218,17 +213,31 @@ find that component's dependencies. Keys in the map are the keys in
 the component record itself, values are the map are the
 corresponding keys in the system record.
 
+    {:component-key :system-key}
+
+In the example above:
+
+       (component/using
+         (example-component config-options)
+         {:database  :db
+          :scheduler :scheduler})
+    ;;     ^          ^
+    ;;     |          |
+    ;;     |          \- Keys in the ExampleSystem record
+    ;;     |
+    ;;     \- Keys in the ExampleComponent record
+
 Based on this information (stored as metadata on the component
 records) the `start-system` function will construct a dependency graph
 of the components and start them all in the correct order.
 
-Before starting each componenet, `start-system` will `assoc` its
+Before starting each component, `start-system` will `assoc` its
 dependencies based on the metadata provided by `using`.
 
-Optionally, if the keys in the system map are the same as in the
-component map, they may be passed as a vector to `using`. If you
-know all the dependencies in advance, you may even add the metadata
-in the component's constructor:
+Optionally, if the keys in the system map are the same as the keys in
+the component map, `using` can take a vector of those keys instead of
+a map. If you know the names of all the components in your system, you
+can add the metadata in the component's constructor:
 
 ```clojure
 (defrecord AnotherComponent [component-a component-b])
@@ -241,7 +250,8 @@ in the component's constructor:
     [:component-a :component-b]))
 ```
 
-### Sample Usage
+
+### Example REPL Session
 
 ```clojure
 (def system (example-system {:host "dbhost.com" :port 123}))
@@ -264,15 +274,70 @@ in the component's constructor:
 ```
 
 
+### Reloading
+
+I developed this pattern in combination with my "reloaded" [workflow].
+For development, I might create a `user` namespace like this:
+
+[workflow]: http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded
+
+```clojure
+(ns user
+  (:require [com.stuartsierra.component :as component]
+            [clojure.tools.namespace.repl :refer (refresh)]
+            [examples :as app]))
+
+(def system nil)
+
+(defn init []
+  (alter-var-root #'system
+    (constantly (app/example-system {:host "dbhost.com" :port 123}))))
+
+(defn start []
+  (alter-var-root #'system component/start))
+
+(defn stop []
+  (alter-var-root #'system
+    (fn [s] (when s (component/stop s)))))
+
+(defn go []
+  (init)
+  (start))
+
+(defn reset []
+  (stop)
+  (refresh :after 'user/go))
+```
+
+
+### Production
+
+In the deployed or production version of my application, I typically
+have a "main" function that creates and starts the top-level system.
+
+```clojure
+(ns com.example.application.main
+  (:gen-class)
+  (:require [com.stuartsierra.component :as component]
+            [examples :as app]))
+
+(defn -main [& args]
+  (let [[host port] args]
+    (component/start
+      (app/example-system {:host host :port port}))))
+```
+
+
 ### Usage Notes
 
 The top-level "system" record is intended to be used exclusively for
 starting and stopping other components. No component in the system
 should depend on its parent system.
 
-Application functions should not receive the top-level system as an
-argument. Rather, each component contains only what it needs, and
-components are isolated from one another.
+I do not intend that application functions should receive the
+top-level system as an argument. Rather, functions are defined in
+terms of components. Each component receives references only to the
+components on which it depends.
 
 The "application" or "business logic" may itself be represented by a
 component.
@@ -311,6 +376,18 @@ pattern by following these guidelines:
 
 * Take the encapsulated runtime state as an argument to any library
   functions which depend on it.
+
+
+
+## References / More Information
+
+* [tools.namespace](https://github.com/clojure/tools.namespace)
+* [On the Perils of Dynamic Scope](http://stuartsierra.com/2013/03/29/perils-of-dynamic-scope).
+* [Clojure in the Large](http://www.infoq.com/presentations/Clojure-Large-scale-patterns-techniques) (video)
+* [Relevance Podcast Episode 32](http://thinkrelevance.com/blog/2013/05/29/stuart-sierra-episode-032) (audio)
+* [My Clojure Workflow, Reloaded](http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded)
+* [reloaded](https://github.com/stuartsierra/reloaded) Leiningen template
+* [Lifecycle Composition](http://stuartsierra.com/2013/09/15/lifecycle-composition)
 
 
 
