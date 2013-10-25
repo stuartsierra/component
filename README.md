@@ -294,6 +294,39 @@ The original exception which the component threw is available as
 but you can use the system attached to the exception to clean up any
 partially-constructed state.
 
+You may find it useful to define your `start` and `stop` methods to be
+idempotent, i.e., to have effect only if the component is not already
+started or stopped.
+
+```clojure
+(defrecord IdempotentDatabaseExample [host port connection]
+  component/Lifecycle
+  (start [this]
+    (if connection  ; already started
+      this
+      (assoc this :connection (connect host port))))
+  (stop [this]
+    (if (not connection)  ; already stopped
+      this
+      (assoc this :connection nil))))
+```
+
+'Component' does not require that stop/start be idempotent, but it can
+make it easier to clean up state after an error, because you can call
+`stop` indescriminately on everything.
+
+In addition, you could wrap the body of `stop` in a try/catch that
+ignores all exceptions.
+
+```clojure
+(try ;; ...
+  (catch Throwable t
+    (log/warn t "Error when stoppnig component")))
+```
+
+That way, errors stopping one component will not prevent other
+components from shutting down cleanly.
+
 
 ### Reloading
 
@@ -370,14 +403,15 @@ Different implementations of a component (for example, a stub version
 for testing) can be injected into a system with `assoc` before calling
 `start`.
 
-Systems may be composed into larger systems.
+Systems may be composed into larger systems, although I have not yet
+found a need for this.
 
 
 ### Notes for Library Authors
 
 'Component' is intended as a tool for application developers, not
 library authors. I do not believe that a general-purpose library
-should impose any particular structure on the application which uses
+should impose any particular framework on the application which uses
 it.
 
 That said, libraries can make it trivially easy for application
