@@ -34,7 +34,8 @@
       (into {} (map (fn [x] [x x]) dependencies))
     :else
       (throw (ex-info "Dependencies must be a map or vector"
-                      {:component component
+                      {:reason ::invalid-dependencies
+                       :component component
                        :dependencies dependencies})))))
 
 (defn dependency-graph
@@ -49,25 +50,57 @@
              (dep/graph)
              (select-keys system component-keys)))
 
+(defn- assoc-dependency [system component dependency-key system-key]
+  (let [dependency (get system system-key)]
+    (when-not dependency
+      (throw (ex-info "Missing component dependency"
+                      {:reason ::missing-dependency
+                       :system-key system-key
+                       :dependency-key dependency-key
+                       :component component
+                       :system system})))
+    (assoc component dependency-key dependency)))
+
+(defn- assoc-dependencies [component system]
+  (reduce-kv #(assoc-dependency system %1 %2 %3)
+             component
+             (dependencies component)))
+
+(defn- start-component [component system]
+  (try (start component)
+       (catch Throwable t
+         (throw (ex-info "Error starting component"
+                         {:reason ::start-threw-exception
+                          :component component
+                          :system system}
+                         t)))))
+
+(defn- stop-component [component system]
+  (try (stop component)
+       (catch Throwable t
+         (throw (ex-info "Error stopping component"
+                         {:reason ::stop-threw-exception
+                          :component component
+                          :system system}
+                         t)))))
+
+(defn- get-component [system key]
+  (or (get system key)
+      (throw (ex-info "Missing component from system"
+                      {:reason ::missing-component
+                       :component-key key
+                       :system system}))))
+
 (defn start-system
-  "Recursively starts components in the system, in dependency order."
+  "Recursively starts components in the system, in dependency order,
+  assoc'ing in their dependencies along the way."
   [system component-keys]
   (let [graph (dependency-graph system component-keys)]
     (reduce (fn [system key]
-              (let [component (get system key)]
-                (try
-                  (assoc system key
-                         (start
-                          (reduce-kv (fn [component dependency-key system-key]
-                                       (assoc component dependency-key
-                                              (get system system-key)))
-                                     component
-                                     (dependencies component))))
-                  (catch Throwable t
-                    (throw (ex-info "Error starting component"
-                                    {:component component
-                                     :system system}
-                                    t))))))
+              (assoc system key
+                     (-> (get-component system key)
+                         (assoc-dependencies system)
+                         (start-component system))))
             system
             (sort (dep/topo-comparator graph) component-keys))))
 
@@ -77,14 +110,9 @@
   [system component-keys]
   (let [graph (dependency-graph system component-keys)]
     (reduce (fn [system key]
-              (let [component (get system key)]
-                (try
-                  (assoc system key (stop component))
-                  (catch Throwable t
-                    (throw (ex-info "Error stopping component"
-                                    {:component component
-                                     :system system}
-                                    t))))))
+              (assoc system key
+                     (-> (get-component system key)
+                         (stop-component system))))
             system
             (reverse (sort (dep/topo-comparator graph) component-keys)))))
 
