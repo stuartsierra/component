@@ -4,7 +4,9 @@
 software components with runtime state which must be manually
 initialized and destroyed.
 
-This is primarily a design pattern with a few helper functions.
+This is primarily a design pattern with a few helper functions. It can
+be seen as a style of dependency injection using immutable data
+structures.
 
 
 
@@ -37,6 +39,17 @@ current SNAPSHOT version.
 
 
 
+## Dependencies and Compatibility
+
+I have successfully tested 'Component' with Clojure versions
+1.4.0 and 1.5.1.
+
+'Component' depends on my [dependency] library.
+
+[dependency]: https://github.com/stuartsierra/dependency
+
+
+
 ## Introduction
 
 For the purposes of this framework, a *component* is a collection of
@@ -60,8 +73,8 @@ A *component* is similar in spirit to the definition of an *object* in
 Object-Oriented Programming.
 
 Clojure is not an object-oriented programming language, so we do not
-have to cram everything into this model. Some functions are just
-functions. But real-world applications need to manage state.
+have to cram everything into this model. Some (most) functions are
+just functions. But real-world applications need to manage state.
 Components are a tool to help with that.
 
 
