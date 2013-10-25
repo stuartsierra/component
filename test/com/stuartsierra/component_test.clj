@@ -169,3 +169,28 @@
                                    :c (error-start-c)))
                 (catch Exception e e))]
     (is (started? (-> ex ex-data :system :b :a)))))
+
+(defrecord System2b [one]
+  component/Lifecycle
+  (start [this]
+    (assert (started? (get-in one [:b :a])))
+    this)
+  (stop [this]
+    (assert (started? (get-in one [:b :a])))
+    this))
+
+(defrecord System2 [alpha beta]
+  component/Lifecycle
+  (start [this]
+    (component/start-system this (keys this)))
+  (stop [this]
+    (component/stop-system this (keys this))))
+
+(defn system-2 []
+  (map->System2 {:alpha (system-1)
+                 :beta (component/using (->System2b nil)
+                         {:one :alpha})}))
+
+(deftest composed-systems
+  (let [system (component/start (system-2))]
+    (is (started? (get-in system [:beta :one :d :my-c])))))
