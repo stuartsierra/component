@@ -424,6 +424,8 @@ pattern by following these guidelines:
 * Never rely on dynamic binding to convey state (for example, the
   "current" database connection).
 
+* Never perform side effects at the top level of a source file.
+
 * Encapsulate all the runtime state needed by the library in a single
   data structure.
 
