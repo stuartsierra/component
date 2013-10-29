@@ -10,32 +10,43 @@ structures.
 
 
 
+
 ## Releases and Dependency Information
 
-No releases yet. Run `lein install` in this directory to install the
-current SNAPSHOT version.
+* I publish releases to [Clojars]
 
-* Releases will be published to [Clojars]
+* Latest stable release is [0.1.0](https://github.com/stuartsierra/component/tree/component-0.1.0)
 
-* Latest stable release is TODO_LINK
-
-* All released versions TODO_LINK
+* [All releases](https://clojars.org/com.stuartsierra/component)
 
 [Leiningen] dependency information:
 
-    [com.stuartsierra/component "0.1.0-SNAPSHOT"]
+    [com.stuartsierra/component "0.1.0"]
 
 [Maven] dependency information:
 
     <dependency>
       <groupId>com.stuartsierra/groupId>
       <artifactId>component</artifactId>
-      <version>0.1.0-SNAPSHOT</version>
+      <version>0.1.0</version>
     </dependency>
 
 [Clojars]: http://clojars.org/
 [Leiningen]: http://leiningen.org/
 [Maven]: http://maven.apache.org/
+
+
+
+## API Stability
+
+'Component' is new, experimental, subject to change, alpha, beta,
+gamma, delta, blah blah blah.
+
+I will make an effort not to break backwards compability between
+releases at the same major.minor version, e.g. 0.1.x and 0.1.y.
+
+Version 0.2.0, if there ever is a 0.2.0, will probably break
+absolutely everything. Don't say I didn't warn you.
 
 
 
@@ -450,7 +461,9 @@ pattern by following these guidelines:
 
 ## Change Log
 
-* Version 0.1.0-SNAPSHOT
+* Version [0.1.0] released on October 28, 2013
+
+[0.1.0]: https://github.com/stuartsierra/component/tree/component-0.1.0
 
 
 
