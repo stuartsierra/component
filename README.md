@@ -461,6 +461,7 @@ pattern by following these guidelines:
 
 ## Change Log
 
+* Version 0.1.1-SNAPSHOT (current Git master branch)
 * Version [0.1.0] released on October 28, 2013
 
 [0.1.0]: https://github.com/stuartsierra/component/tree/component-0.1.0
