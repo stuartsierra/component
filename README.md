@@ -453,6 +453,31 @@ pattern by following these guidelines:
   functions which depend on it.
 
 
+### Customization
+
+**New in 0.1.1-SNAPSHOT:** The `start-system` and `stop-system`
+functions are just special cases of two other functions,
+`update-system` and `update-system-reverse`.
+
+You could, for example, define your own lifecycle functions as new
+protocols. You don't even have to use protocols and records;
+multimethods and ordinary maps would work as well. Any data structure
+which supports Clojure metadata can be a component.
+
+Both `update-system` and `update-system-reverse` take a function as
+an argument and call it on each component in the system. Along the
+way, they `assoc` in the updated dependencies of each component.
+
+The `update-system` function iterates over the components in
+dependency order (a component will be called *after* its dependencies)
+the `update-system-reverse` function goes in reverse dependency order
+(a component will be called *before* its dependencies).
+
+Calling `update-system` with the `identity` function is equivalent to
+doing just the dependency injection part of 'Component' without
+modifying any components.
+
+
 
 ## References / More Information
 
@@ -469,6 +494,10 @@ pattern by following these guidelines:
 ## Change Log
 
 * Version 0.1.1-SNAPSHOT (current Git master branch)
+  * API compatible with 0.1.0, some exception messages have changed
+  * Added `update-system` and `update-system-reverse`
+  * Redefined `start-system` and `stop-system` in terms of these
+  * `stop-system` now assoc's dependencies just like `start-system`
 * Version [0.1.0] released on October 28, 2013
 
 [0.1.0]: https://github.com/stuartsierra/component/tree/component-0.1.0

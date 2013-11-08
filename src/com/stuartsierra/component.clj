@@ -66,20 +66,12 @@
              component
              (dependencies component)))
 
-(defn- start-component [component system]
-  (try (start component)
+(defn- try-action [component f system]
+  (try (f component)
        (catch Throwable t
-         (throw (ex-info "Error starting component"
-                         {:reason ::start-threw-exception
-                          :component component
-                          :system system}
-                         t)))))
-
-(defn- stop-component [component system]
-  (try (stop component)
-       (catch Throwable t
-         (throw (ex-info "Error stopping component"
-                         {:reason ::stop-threw-exception
+         (throw (ex-info "Error calling function on component"
+                         {:reason ::component-function-threw-exception
+                          :function f
                           :component component
                           :system system}
                          t)))))
@@ -91,30 +83,43 @@
                        :component-key key
                        :system system}))))
 
-(defn start-system
-  "Recursively starts components in the system, in dependency order,
-  assoc'ing in their dependencies along the way."
-  [system component-keys]
+(defn update-system
+  "Invokes f on each of the values of component-keys in the system, in
+  dependency order. Before invoking f, assoc's updated dependencies of
+  the component."
+  [system component-keys f]
   (let [graph (dependency-graph system component-keys)]
     (reduce (fn [system key]
               (assoc system key
                      (-> (get-component system key)
                          (assoc-dependencies system)
-                         (start-component system))))
+                         (try-action f system))))
             system
             (sort (dep/topo-comparator graph) component-keys))))
+
+(defn update-system-reverse
+  "Like update-system but operates in reverse-dependence order."
+  [system component-keys f]
+  (let [graph (dependency-graph system component-keys)]
+    (reduce (fn [system key]
+              (assoc system key
+                     (-> (get-component system key)
+                         (assoc-dependencies system)
+                         (try-action f system))))
+            system
+            (reverse (sort (dep/topo-comparator graph) component-keys)))))
+
+(defn start-system
+  "Recursively starts components in the system, in dependency order,
+  assoc'ing in their dependencies along the way."
+  [system component-keys]
+  (update-system system component-keys #'start))
 
 (defn stop-system
   "Recursively stops components in the system, in reverse dependency
   order."
   [system component-keys]
-  (let [graph (dependency-graph system component-keys)]
-    (reduce (fn [system key]
-              (assoc system key
-                     (-> (get-component system key)
-                         (stop-component system))))
-            system
-            (reverse (sort (dep/topo-comparator graph) component-keys)))))
+  (update-system-reverse system component-keys #'stop))
 
 ;; Copyright © 2013 Stuart Sierra
 

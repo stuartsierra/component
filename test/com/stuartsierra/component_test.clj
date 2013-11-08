@@ -210,3 +210,27 @@
 (deftest composed-systems
   (let [system (component/start (system-2))]
     (is (started? (get-in system [:beta :one :d :my-c])))))
+
+(deftest update-with-custom-function-on-maps
+  (let [system {:a {:n 10}
+                :b (component/using {:n 20} [:a])
+                :c (component/using {:n 30} [:a :b])
+                :d (component/using {:n 40} [:a :b])
+                :e (component/using {:n 50} [:b :c :d])}
+        system (component/update-system
+                system
+                (keys system)
+                (fn [component]
+                  (update-in component [:n] inc)))]
+    (are [n keys] (= n (get-in system keys))
+         11 [:a :n]
+         11 [:b :a :n]
+         11 [:c :a :n]
+         11 [:c :b :a :n]
+         11 [:e :d :b :a :n]
+         21 [:b :n]
+         21 [:c :b :n]
+         21 [:d :b :n]
+         31 [:c :n]
+         41 [:d :n]
+         51 [:e :n])))
