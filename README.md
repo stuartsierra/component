@@ -97,6 +97,7 @@ Components are a tool to help with that.
   (:require [com.stuartsierra.component :as component]))
 ```
 
+
 ### Creating Components
 
 To create a component, define a Clojure record that implements the
@@ -181,6 +182,9 @@ being available or started.
   (map->ExampleComponent {:options config-options
                           :cache (atom {})}))
 ```
+
+A component's runtime dependencies will be injected into it by its
+containing system: see below.
 
 
 ### Systems
@@ -330,7 +334,7 @@ In addition, you could wrap the body of `stop` in a try/catch that
 ignores all exceptions.
 
 ```clojure
-(try ;; ...
+(try (.close connection)
   (catch Throwable t
     (log/warn t "Error when stopping component")))
 ```
@@ -392,12 +396,15 @@ have a "main" function that creates and starts the top-level system.
       (app/example-system {:host host :port port}))))
 ```
 
+This also works well in conjunction with command-line drivers such as
+[Apache Commons Daemon](http://commons.apache.org/proper/commons-daemon/).
+
 
 ### Usage Notes
 
 The top-level "system" record is intended to be used exclusively for
 starting and stopping other components. No component in the system
-should depend on its parent system.
+should depend directly on its parent system.
 
 I do not intend that application functions should receive the
 top-level system as an argument. Rather, functions are defined in
