@@ -220,8 +220,7 @@
         system (component/update-system
                 system
                 (keys system)
-                (fn [component]
-                  (update-in component [:n] inc)))]
+                update-in [:n] inc)]
     (are [n keys] (= n (get-in system keys))
          11 [:a :n]
          11 [:b :a :n]

@@ -66,8 +66,8 @@
              component
              (dependencies component)))
 
-(defn- try-action [component f system]
-  (try (f component)
+(defn- try-action [component system f args]
+  (try (apply f component args)
        (catch Throwable t
          (throw (ex-info "Error calling function on component"
                          {:reason ::component-function-threw-exception
@@ -84,28 +84,28 @@
                        :system system}))))
 
 (defn update-system
-  "Invokes f on each of the values of component-keys in the system, in
-  dependency order. Before invoking f, assoc's updated dependencies of
-  the component."
-  [system component-keys f]
+  "Invokes (apply f component args) on each of the components at
+  component-keys in the system, in dependency order. Before invoking
+  f, assoc's updated dependencies of the component."
+  [system component-keys f & args]
   (let [graph (dependency-graph system component-keys)]
     (reduce (fn [system key]
               (assoc system key
                      (-> (get-component system key)
                          (assoc-dependencies system)
-                         (try-action f system))))
+                         (try-action system f args))))
             system
             (sort (dep/topo-comparator graph) component-keys))))
 
 (defn update-system-reverse
   "Like update-system but operates in reverse-dependence order."
-  [system component-keys f]
+  [system component-keys f & args]
   (let [graph (dependency-graph system component-keys)]
     (reduce (fn [system key]
               (assoc system key
                      (-> (get-component system key)
                          (assoc-dependencies system)
-                         (try-action f system))))
+                         (try-action system f args))))
             system
             (reverse (sort (dep/topo-comparator graph) component-keys)))))
 
