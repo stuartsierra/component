@@ -461,8 +461,7 @@ functions are just special cases of two other functions,
 
 You could, for example, define your own lifecycle functions as new
 protocols. You don't even have to use protocols and records;
-multimethods and ordinary maps would work as well. Any data structure
-which supports Clojure metadata can be a component.
+multimethods and ordinary maps would work as well.
 
 Both `update-system` and `update-system-reverse` take a function as
 an argument and call it on each component in the system. Along the
