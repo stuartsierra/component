@@ -31,9 +31,14 @@ structures.
       <version>0.1.0</version>
     </dependency>
 
+[Gradle] dependency information:
+
+    compile "com.stuartsierra:component:0.1.0"
+
 [Clojars]: http://clojars.org/
 [Leiningen]: http://leiningen.org/
 [Maven]: http://maven.apache.org/
+[Gradle]: http://www.gradle.org/
 
 
 
