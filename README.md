@@ -94,6 +94,59 @@ just functions. But real-world applications need to manage state.
 Components are a tool to help with that.
 
 
+### Advantages of the Component Model
+
+Components provide some basic guidance for structuring a Clojure
+application, providing clear boundaries between different parts of a
+system. Components offer some encapsulation, in the sense of grouping
+together related entities. Each component receives references only to
+the things it needs, avoiding unnecessary shared state.
+
+Instead of having mutable state (atoms, refs, etc.) scattered
+throughout different namespaces, all the stateful parts of an
+application can be gathered in one place. In some cases, using
+components may eliminate the need for mutable references altogether,
+for example to store the "current" connection to a resource such as a
+database. At the same time, having all state reachable via a single
+"system" object makes it easy to reach in and inspect any part of the
+application from the REPL.
+
+The component dependency model makes it easy to swap in "stub" or
+"mock" implementations of a component for testing purposes, without
+relying on time-dependent constructs such as `with-redefs` or
+`binding`, which are often subject to race conditions in
+multi-threaded code.
+
+Having a coherent way to set up and tear down **all** the state
+associated with an application enables rapid development cycles
+without restarting the JVM. This can also make unit tests faster and
+more independent, since the cost of creating and starting a system is
+low enough that every test can create a new instance of the system.
+
+
+### Disadvantages of the Component Model
+
+First and foremost, this framework expects that all parts of an
+application are constructed according to the same model. In
+particular, it assumes that all application state is passed as
+arguments to the functions that use it. As a result, this framework
+will not compose easily with code which relies on global or singleton
+references.
+
+The "system object" produced by this framework is a large and complex
+map with a lot of duplication. The same component may appear in
+multiple places in the system. The actualy memory cost of this
+duplication is neglible due to persistent data structures, but the
+system map is typically too large to inspect visually.
+
+You must explicitly specify all the dependency relationships among
+components: the library cannot discover these relationships
+automatically.
+
+The 'component' library forbids cyclic dependencies among components.
+
+
+
 
 ## Usage
 
@@ -432,14 +485,13 @@ found a need for this.
 
 ### Notes for Library Authors
 
-'Component' is intended as a tool for application developers, not
-library authors. I do not believe that a general-purpose library
-should impose any particular framework on the application which uses
-it.
+'Component' is intended as a tool for applications, not resuable
+libraries. I do not believe that a general-purpose library should
+impose any particular framework on the application which uses it.
 
-That said, libraries can make it trivially easy for application
-authors to use their libraries in combination with the 'Component'
-pattern by following these guidelines:
+That said, library authors can make it trivially easy for applications
+to use their libraries in combination with the 'Component' pattern by
+following these guidelines:
 
 * Never create global mutable state (for example, an Atom or Ref
   stored in a `def`).
