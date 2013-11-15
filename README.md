@@ -96,6 +96,11 @@ Components are a tool to help with that.
 
 ### Advantages of the Component Model
 
+Large applications often consist of many stateful processes which must
+be started and stopped in a particular order. The component model
+makes those relationships explicit and declarative, instead of
+implicit in imperative code.
+
 Components provide some basic guidance for structuring a Clojure
 application, providing clear boundaries between different parts of a
 system. Components offer some encapsulation, in the sense of grouping
@@ -136,6 +141,12 @@ In particular, 'component' assumes that all application state is
 passed as arguments to the functions that use it. As a result, this
 framework may not work well with code which relies on global or
 singleton references.
+
+For small applications, declaring the dependency relationships among
+components may actually be harder that manually starting all the
+components in the correct order. You can still use the 'Lifecycle'
+protocol without using the dependency-injection features, but the
+added value of 'component' in that case is small.
 
 The "system object" produced by this framework is a large and complex
 map with a lot of duplication. The same component may appear in
