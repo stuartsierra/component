@@ -60,7 +60,7 @@ absolutely everything. Don't say I didn't warn you.
 I have successfully tested 'Component' with Clojure versions
 1.4.0 and 1.5.1.
 
-'Component' depends on my [dependency] library.
+'Component' uses my [dependency] library.
 
 [dependency]: https://github.com/stuartsierra/dependency
 
@@ -100,7 +100,9 @@ Components provide some basic guidance for structuring a Clojure
 application, providing clear boundaries between different parts of a
 system. Components offer some encapsulation, in the sense of grouping
 together related entities. Each component receives references only to
-the things it needs, avoiding unnecessary shared state.
+the things it needs, avoiding unnecessary shared state. Instead of
+reaching through multiple levels of nested maps, a component can have
+everything it needs at most one map lookup away.
 
 Instead of having mutable state (atoms, refs, etc.) scattered
 throughout different namespaces, all the stateful parts of an
@@ -113,13 +115,13 @@ application from the REPL.
 
 The component dependency model makes it easy to swap in "stub" or
 "mock" implementations of a component for testing purposes, without
-relying on time-dependent constructs such as `with-redefs` or
+relying on time-dependent constructs, such as `with-redefs` or
 `binding`, which are often subject to race conditions in
 multi-threaded code.
 
 Having a coherent way to set up and tear down **all** the state
 associated with an application enables rapid development cycles
-without restarting the JVM. This can also make unit tests faster and
+without restarting the JVM. It can also make unit tests faster and
 more independent, since the cost of creating and starting a system is
 low enough that every test can create a new instance of the system.
 
@@ -127,23 +129,30 @@ low enough that every test can create a new instance of the system.
 ### Disadvantages of the Component Model
 
 First and foremost, this framework expects that all parts of an
-application are constructed according to the same model. In
-particular, it assumes that all application state is passed as
-arguments to the functions that use it. As a result, this framework
-will not compose easily with code which relies on global or singleton
-references.
+application follow the same pattern. It is not easy to retrofit the
+component model to an existing application without major refactoring.
+
+In particular, 'component' assumes that all application state is
+passed as arguments to the functions that use it. As a result, this
+framework may not work well with code which relies on global or
+singleton references.
 
 The "system object" produced by this framework is a large and complex
 map with a lot of duplication. The same component may appear in
-multiple places in the system. The actualy memory cost of this
-duplication is neglible due to persistent data structures, but the
-system map is typically too large to inspect visually.
+multiple places in the map. The actual memory cost of this duplication
+is negligible due to persistent data structures, but the system map is
+typically too large to inspect visually.
 
 You must explicitly specify all the dependency relationships among
 components: the library cannot discover these relationships
 automatically.
 
-The 'component' library forbids cyclic dependencies among components.
+Finally, the 'component' library forbids cyclic dependencies among
+components. I believe that cyclic dependencies usually indicate
+architectural flaws and can be eliminated by restructuring the
+application. In the rare case where a cyclic dependency cannot be
+avoided, you can use mutable references to manage it, but this is
+outside the scope of 'component'.
 
 
 
@@ -231,9 +240,9 @@ depend.
     this))
 ```
 
-Not all the dependencies need to be supplied at construction time.
-In general, the constructor should not depend on other components
-being available or started.
+Not all the dependencies need to be supplied at construction time. In
+general, the constructor should not depend on other components being
+available or started.
 
 ```clojure
 (defn example-component [config-options]
@@ -241,14 +250,15 @@ being available or started.
                           :cache (atom {})}))
 ```
 
-A component's runtime dependencies will be injected into it by its
-containing system: see below.
+A component's runtime dependencies will be injected into it by the
+system which contains it: see the next section.
 
 
 ### Systems
 
 Components are composed into systems. A system is a component which
-knows how to start and stop other components.
+knows how to start and stop other components. It is also responsible
+for injecting dependencies into the components which need them.
 
 A system can use the helper functions `start-system` and `stop-system`,
 which take a set of keys naming components in the system to be
@@ -381,24 +391,23 @@ started or stopped.
   (stop [this]
     (if (not connection)  ; already stopped
       this
-      (assoc this :connection nil))))
+      (do (.close connection)
+          (assoc this :connection nil)))))
 ```
 
-'Component' does not require that stop/start be idempotent, but it can
-make it easier to clean up state after an error, because you can call
-`stop` indiscriminately on everything.
+'Component' does not require that stop/start be idempotent, but
+idempotence can make it easier to clean up state after an error,
+because you can call `stop` indiscriminately on everything.
 
 In addition, you could wrap the body of `stop` in a try/catch that
-ignores all exceptions.
+ignores all exceptions. That way, errors stopping one component will
+not prevent other components from shutting down cleanly.
 
 ```clojure
 (try (.close connection)
   (catch Throwable t
     (log/warn t "Error when stopping component")))
 ```
-
-That way, errors stopping one component will not prevent other
-components from shutting down cleanly.
 
 
 ### Reloading
@@ -530,8 +539,7 @@ the `update-system-reverse` function goes in reverse dependency order
 (a component will be called *before* its dependencies).
 
 Calling `update-system` with the `identity` function is equivalent to
-doing just the dependency injection part of 'Component' without
-modifying any components.
+doing just the dependency injection part of 'component'.
 
 
 
