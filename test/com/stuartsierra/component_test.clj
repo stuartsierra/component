@@ -249,3 +249,10 @@
                 :e {:n 50}}
         system (component/system-using system dependency-map)]
     (assert-increments (increment-all-components system))))
+
+(defrecord ComponentWithoutLifecycle [state])
+
+(deftest component-without-lifecycle
+  (let [c (->ComponentWithoutLifecycle nil)]
+    (is (= c (component/start c)))
+    (is (= c (component/stop c)))))
