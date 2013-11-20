@@ -1,8 +1,7 @@
 # component
 
 'Component' is a tiny Clojure framework for managing the lifecycle of
-software components with runtime state which must be manually
-initialized and destroyed.
+software components which have runtime state.
 
 This is primarily a design pattern with a few helper functions. It can
 be seen as a style of dependency injection using immutable data
@@ -48,10 +47,10 @@ structures.
 gamma, delta, blah blah blah.
 
 I will make an effort not to break backwards compability between
-releases at the same major.minor version, e.g. 0.1.x and 0.1.y.
+releases at the same 0.N version, e.g. 0.1.X and 0.1.Y
 
-Version 0.2.0, if there ever is a 0.2.0, will probably break
-absolutely everything. Don't say I didn't warn you.
+Version 0.2.0, if there ever is a 0.2.0, may have breaking changes
+from 0.1.
 
 
 
@@ -89,8 +88,8 @@ A *component* is similar in spirit to the definition of an *object* in
 Object-Oriented Programming.
 
 Clojure is not an object-oriented programming language, so we do not
-have to cram everything into this model. Some (most) functions are
-just functions. But real-world applications need to manage state.
+have to cram everything into the OO model. Most functions are just
+functions. But real-world applications need to manage state.
 Components are a tool to help with that.
 
 
@@ -102,21 +101,21 @@ makes those relationships explicit and declarative, instead of
 implicit in imperative code.
 
 Components provide some basic guidance for structuring a Clojure
-application, providing clear boundaries between different parts of a
-system. Components offer some encapsulation, in the sense of grouping
-together related entities. Each component receives references only to
-the things it needs, avoiding unnecessary shared state. Instead of
+application, with boundaries between different parts of a system.
+Components offer some encapsulation, in the sense of grouping together
+related entities. Each component receives references only to the
+things it needs, avoiding unnecessary shared state. Instead of
 reaching through multiple levels of nested maps, a component can have
 everything it needs at most one map lookup away.
 
 Instead of having mutable state (atoms, refs, etc.) scattered
 throughout different namespaces, all the stateful parts of an
-application can be gathered in one place. In some cases, using
-components may eliminate the need for mutable references altogether,
-for example to store the "current" connection to a resource such as a
-database. At the same time, having all state reachable via a single
-"system" object makes it easy to reach in and inspect any part of the
-application from the REPL.
+application can be gathered together. In some cases, using components
+may eliminate the need for mutable references altogether, for example
+to store the "current" connection to a resource such as a database. At
+the same time, having all state reachable via a single "system" object
+makes it easy to reach in and inspect any part of the application from
+the REPL.
 
 The component dependency model makes it easy to swap in "stub" or
 "mock" implementations of a component for testing purposes, without
@@ -133,12 +132,12 @@ low enough that every test can create a new instance of the system.
 
 ### Disadvantages of the Component Model
 
-First and foremost, this framework expects that all parts of an
+First and foremost, this framework works best when all parts of an
 application follow the same pattern. It is not easy to retrofit the
 component model to an existing application without major refactoring.
 
-In particular, 'component' assumes that all application state is
-passed as arguments to the functions that use it. As a result, this
+In particular, the 'component' code assumes that all application state
+is passed as arguments to the functions that use it. As a result, this
 framework may not work well with code which relies on global or
 singleton references.
 
@@ -155,7 +154,7 @@ is negligible due to persistent data structures, but the system map is
 typically too large to inspect visually.
 
 You must explicitly specify all the dependency relationships among
-components: the library cannot discover these relationships
+components: the code cannot discover these relationships
 automatically.
 
 Finally, the 'component' library forbids cyclic dependencies among
@@ -255,14 +254,14 @@ Not all the dependencies need to be supplied at construction time. In
 general, the constructor should not depend on other components being
 available or started.
 
+A component's runtime dependencies will be injected into it by the
+system which contains it: see the next section.
+
 ```clojure
 (defn example-component [config-options]
   (map->ExampleComponent {:options config-options
                           :cache (atom {})}))
 ```
-
-A component's runtime dependencies will be injected into it by the
-system which contains it: see the next section.
 
 
 ### Systems
@@ -328,6 +327,16 @@ of the components and start them all in the correct order.
 Before starting each component, `start-system` will `assoc` its
 dependencies based on the metadata provided by `using`.
 
+Again using the example above, the ExampleComponent would be started
+as if by:
+
+```
+(-> example-component
+    (assoc :database (:db system))
+    (assoc :scheduler (:scheduler system))
+    (start))
+```
+
 Optionally, if the keys in the system map are the same as the keys in
 the component map, `using` can take a vector of those keys instead of
 a map. If you know the names of all the components in your system, you
@@ -342,6 +351,23 @@ can add the metadata in the component's constructor:
   (component/using
     (map->AnotherComponent {})
     [:component-a :component-b]))
+```
+
+Alternately, component dependencies can be specified all at once for
+all components in the system with `system-using`, which takes a map
+from component names to their dependencies.
+
+```clojure
+(defn example-system [config-options]
+  (let [{:keys [host port]} config-options]
+    (-> (map->ExampleSystem
+          {:config-options config-options
+           :db (new-database host port)
+           :scheduler (new-scheduler)
+           :app (example-component config-options)})
+        (component/system-using
+          {:app {:database  :db
+                 :scheduler :scheduler}}))))
 ```
 
 
@@ -419,6 +445,16 @@ not prevent other components from shutting down cleanly.
   (catch Throwable t
     (log/warn t "Error when stopping component")))
 ```
+
+
+### Stateless Components
+
+There is a default implementation of Lifecycle which is a no-op. If
+you omit the `Lifecycle` protocol from a component, it can still
+participate in the dependency injection process.
+
+You cannot omit just one of the `start` or `stop` methods: any
+component which implements `Lifecycle` must supply both.
 
 
 ### Reloading
