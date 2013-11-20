@@ -11,6 +11,14 @@
   until the component is stopped. Returns an updated version of this
   component."))
 
+;; No-op implementation if one is not defined.
+(extend-protocol Lifecycle
+  java.lang.Object
+  (start [this]
+    this)
+  (stop [this]
+    this))
+
 (defn dependencies
   "Returns the map of other components on which this component depends."
   [component]
