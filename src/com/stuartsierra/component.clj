@@ -38,6 +38,24 @@
                        :component component
                        :dependencies dependencies})))))
 
+(defn system-using
+  "Associates dependency metadata with multiple components in the
+  system. dependency-map is a map of keys in the system to maps or
+  vectors specifying the dependencies of the component at that key in
+  the system, as per 'using'."
+  [system dependency-map]
+  (reduce-kv
+   (fn [system key dependencies]
+     (let [component (get system key)]
+       (when-not component
+         (throw (ex-info "Missing component from system"
+                         {:reason ::missing-component
+                          :component-key key
+                          :system system})))
+       (assoc system key (using component dependencies))))
+   system
+   dependency-map))
+
 (defn dependency-graph
   "Returns a dependency graph, using the data structures defined in
   com.stuartsierra.dependency, for the components found by

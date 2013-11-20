@@ -211,25 +211,41 @@
   (let [system (component/start (system-2))]
     (is (started? (get-in system [:beta :one :d :my-c])))))
 
+(defn increment-all-components [system]
+  (component/update-system
+   system (keys system) update-in [:n] inc))
+
+(defn assert-increments [system]
+  (are [n keys] (= n (get-in system keys))
+       11 [:a :n]
+       11 [:b :a :n]
+       11 [:c :a :n]
+       11 [:c :b :a :n]
+       11 [:e :d :b :a :n]
+       21 [:b :n]
+       21 [:c :b :n]
+       21 [:d :b :n]
+       31 [:c :n]
+       41 [:d :n]
+       51 [:e :n]))
+
 (deftest update-with-custom-function-on-maps
   (let [system {:a {:n 10}
                 :b (component/using {:n 20} [:a])
                 :c (component/using {:n 30} [:a :b])
                 :d (component/using {:n 40} [:a :b])
-                :e (component/using {:n 50} [:b :c :d])}
-        system (component/update-system
-                system
-                (keys system)
-                update-in [:n] inc)]
-    (are [n keys] (= n (get-in system keys))
-         11 [:a :n]
-         11 [:b :a :n]
-         11 [:c :a :n]
-         11 [:c :b :a :n]
-         11 [:e :d :b :a :n]
-         21 [:b :n]
-         21 [:c :b :n]
-         21 [:d :b :n]
-         31 [:c :n]
-         41 [:d :n]
-         51 [:e :n])))
+                :e (component/using {:n 50} [:b :c :d])}]
+    (assert-increments (increment-all-components system))))
+
+(deftest t-system-using
+  (let [dependency-map {:b [:a]
+                        :c [:a :b]
+                        :d {:a :a :b :b}
+                        :e [:b :c :d]}
+        system {:a {:n 10}
+                :b {:n 20}
+                :c {:n 30}
+                :d {:n 40}
+                :e {:n 50}}
+        system (component/system-using system dependency-map)]
+    (assert-increments (increment-all-components system))))
