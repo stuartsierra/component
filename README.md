@@ -25,7 +25,7 @@ structures.
 [Maven] dependency information:
 
     <dependency>
-      <groupId>com.stuartsierra/groupId>
+      <groupId>com.stuartsierra</groupId>
       <artifactId>component</artifactId>
       <version>0.2.0</version>
     </dependency>
