@@ -14,25 +14,25 @@ structures.
 
 * I publish releases to [Clojars]
 
-* Latest stable release is [0.1.0](https://github.com/stuartsierra/component/tree/component-0.1.0)
+* Latest stable release is [0.2.0](https://github.com/stuartsierra/component/tree/component-0.2.0)
 
 * [All releases](https://clojars.org/com.stuartsierra/component)
 
 [Leiningen] dependency information:
 
-    [com.stuartsierra/component "0.1.0"]
+    [com.stuartsierra/component "0.2.0"]
 
 [Maven] dependency information:
 
     <dependency>
       <groupId>com.stuartsierra/groupId>
       <artifactId>component</artifactId>
-      <version>0.1.0</version>
+      <version>0.2.0</version>
     </dependency>
 
 [Gradle] dependency information:
 
-    compile "com.stuartsierra:component:0.1.0"
+    compile "com.stuartsierra:component:0.2.0"
 
 [Clojars]: http://clojars.org/
 [Leiningen]: http://leiningen.org/
@@ -47,10 +47,7 @@ structures.
 gamma, delta, blah blah blah.
 
 I will make an effort not to break backwards compability between
-releases at the same 0.N version, e.g. 0.1.X and 0.1.Y
-
-Version 0.2.0, if there ever is a 0.2.0, may have breaking changes
-from 0.1.
+releases at the same 0.N version, e.g. 0.2.X and 0.2.Y
 
 
 
@@ -568,9 +565,9 @@ following these guidelines:
 
 ### Customization
 
-**New in 0.1.1-SNAPSHOT:** The `start-system` and `stop-system`
-functions are just special cases of two other functions,
-`update-system` and `update-system-reverse`.
+The `start-system` and `stop-system` functions are just special cases
+of two other functions, `update-system` and `update-system-reverse`.
+(Added in 0.2.0)
 
 You could, for example, define your own lifecycle functions as new
 protocols. You don't even have to use protocols and records;
@@ -604,13 +601,17 @@ doing just the dependency injection part of 'component'.
 
 ## Change Log
 
-* Version 0.1.1-SNAPSHOT (current Git master branch)
-  * API compatible with 0.1.0, some exception messages have changed
+* Version 0.2.1-SNAPSHOT (current Git master branch)
+* Version [0.2.0] released on November 20, 2013
+  * API compatible with 0.1.0
+  * Some exception messages changed
+  * Added default no-op implementation of Lifecycle protocol
   * Added `update-system` and `update-system-reverse`
   * Redefined `start-system` and `stop-system` in terms of these
   * `stop-system` now assoc's dependencies just like `start-system`
 * Version [0.1.0] released on October 28, 2013
 
+[0.2.0]: https://github.com/stuartsierra/component/tree/component-0.2.0
 [0.1.0]: https://github.com/stuartsierra/component/tree/component-0.1.0
 
 
