@@ -106,10 +106,10 @@
   component/Lifecycle
   (start [this]
     (log 'System1.start this)
-    (component/start-system this (keys this)))
+    (component/start-system this))
   (stop [this]
     (log 'System1.stop this)
-    (component/stop-system this (keys this))))
+    (component/stop-system this)))
 
 (defn system-1 []
   (map->System1 {:a (component-a)

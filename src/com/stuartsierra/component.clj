@@ -137,15 +137,23 @@
 
 (defn start-system
   "Recursively starts components in the system, in dependency order,
-  assoc'ing in their dependencies along the way."
-  [system component-keys]
-  (update-system system component-keys #'start))
+  assoc'ing in their dependencies along the way. component-keys is a
+  collection of keys (order doesn't matter) in the system specifying
+  the components to start, defaults to all keys in the system."
+  ([system]
+     (start-system system (keys system)))
+  ([system component-keys]
+     (update-system system component-keys #'start)))
 
 (defn stop-system
   "Recursively stops components in the system, in reverse dependency
-  order."
-  [system component-keys]
-  (update-system-reverse system component-keys #'stop))
+  order. component-keys is a collection of keys (order doesn't matter)
+  in the system specifying the components to stop, defaults to all
+  keys in the system."
+  ([system]
+     (stop-system system (keys system)))
+  ([system component-keys]
+     (update-system-reverse system component-keys #'stop)))
 
 ;; Copyright © 2013 Stuart Sierra
 
