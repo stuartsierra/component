@@ -159,6 +159,20 @@
   ([system component-keys]
      (update-system-reverse system component-keys #'stop)))
 
+(defrecord SystemMap []
+  Lifecycle
+  (start [system]
+    (start-system system))
+  (stop [system]
+    (stop-system system)))
+
+(defn system-map
+  "Returns a system constructed of key/value pairs. The system has
+  default implementations of the Lifecycle 'start' and 'stop' methods
+  which recursively start/stop all components in the system."
+  [& keyvals]
+  (map->SystemMap (apply array-map keyvals)))
+
 ;; Copyright © 2013 Stuart Sierra
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy of
