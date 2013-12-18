@@ -602,6 +602,10 @@ doing just the dependency injection part of 'component'.
 ## Change Log
 
 * Version 0.2.1-SNAPSHOT (current Git master branch)
+  * Add generic `system-map`
+  * More descriptive messages on exceptions
+  * Add arity-1 versions of `start-system` and `stop-system` that
+    default to all keys in the system
 * Version [0.2.0] released on November 20, 2013
   * API compatible with 0.1.0
   * Some exception messages changed
