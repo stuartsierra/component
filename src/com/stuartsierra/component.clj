@@ -79,7 +79,9 @@
 (defn- assoc-dependency [system component dependency-key system-key]
   (let [dependency (get system system-key)]
     (when-not dependency
-      (throw (ex-info "Missing component dependency"
+      (throw (ex-info (str "Missing dependency " dependency-key
+                           " in " (.getName (class component))
+                           " expected in system at " system-key)
                       {:reason ::missing-dependency
                        :system-key system-key
                        :dependency-key dependency-key
@@ -92,10 +94,12 @@
              component
              (dependencies component)))
 
-(defn- try-action [component system f args]
+(defn- try-action [component system key f args]
   (try (apply f component args)
        (catch Throwable t
-         (throw (ex-info "Error calling function on component"
+         (throw (ex-info (str "Error in component " key
+                              " in system " (.getName (class system))
+                              " calling " f)
                          {:reason ::component-function-threw-exception
                           :function f
                           :component component
@@ -104,7 +108,7 @@
 
 (defn- get-component [system key]
   (or (get system key)
-      (throw (ex-info "Missing component from system"
+      (throw (ex-info (str "Missing component " key " from system")
                       {:reason ::missing-component
                        :component-key key
                        :system system}))))
@@ -119,7 +123,7 @@
               (assoc system key
                      (-> (get-component system key)
                          (assoc-dependencies system)
-                         (try-action system f args))))
+                         (try-action system key f args))))
             system
             (sort (dep/topo-comparator graph) component-keys))))
 
@@ -131,7 +135,7 @@
               (assoc system key
                      (-> (get-component system key)
                          (assoc-dependencies system)
-                         (try-action system f args))))
+                         (try-action system key f args))))
             system
             (reverse (sort (dep/topo-comparator graph) component-keys)))))
 
