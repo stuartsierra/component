@@ -14,25 +14,25 @@ structures.
 
 * I publish releases to [Clojars]
 
-* Latest stable release is [0.2.0](https://github.com/stuartsierra/component/tree/component-0.2.0)
+* Latest stable release is [0.2.1](https://github.com/stuartsierra/component/tree/component-0.2.1)
 
 * [All releases](https://clojars.org/com.stuartsierra/component)
 
 [Leiningen] dependency information:
 
-    [com.stuartsierra/component "0.2.0"]
+    [com.stuartsierra/component "0.2.1"]
 
 [Maven] dependency information:
 
     <dependency>
       <groupId>com.stuartsierra</groupId>
       <artifactId>component</artifactId>
-      <version>0.2.0</version>
+      <version>0.2.1</version>
     </dependency>
 
 [Gradle] dependency information:
 
-    compile "com.stuartsierra:component:0.2.0"
+    compile "com.stuartsierra:component:0.2.1"
 
 [Clojars]: http://clojars.org/
 [Leiningen]: http://leiningen.org/
@@ -601,7 +601,8 @@ doing just the dependency injection part of 'component'.
 
 ## Change Log
 
-* Version 0.2.1-SNAPSHOT (current Git master branch)
+* Version 0.2.2-SNAPSHOT (current Git master branch)
+* Version [0.2.1] released on December 17, 2013
   * Add generic `system-map`
   * More descriptive messages on exceptions
   * Add arity-1 versions of `start-system` and `stop-system` that
@@ -615,6 +616,7 @@ doing just the dependency injection part of 'component'.
   * `stop-system` now assoc's dependencies just like `start-system`
 * Version [0.1.0] released on October 28, 2013
 
+[0.2.1]: https://github.com/stuartsierra/component/tree/component-0.2.1
 [0.2.0]: https://github.com/stuartsierra/component/tree/component-0.2.0
 [0.1.0]: https://github.com/stuartsierra/component/tree/component-0.1.0
 
