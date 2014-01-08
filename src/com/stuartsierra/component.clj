@@ -171,6 +171,10 @@
   default implementations of the Lifecycle 'start' and 'stop' methods
   which recursively start/stop all components in the system."
   [& keyvals]
+  ;; array-map doesn't check argument length (CLJ-1319)
+  (when-not (even? (count keyvals))
+    (throw (IllegalArgumentException.
+            "system-map requires an even number of arguments")))
   (map->SystemMap (apply array-map keyvals)))
 
 ;; Copyright © 2013 Stuart Sierra
