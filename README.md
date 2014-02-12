@@ -139,7 +139,7 @@ framework may not work well with code which relies on global or
 singleton references.
 
 For small applications, declaring the dependency relationships among
-components may actually be harder that manually starting all the
+components may actually be harder than manually starting all the
 components in the correct order. You can still use the 'Lifecycle'
 protocol without using the dependency-injection features, but the
 added value of 'component' in that case is small.
