@@ -43,11 +43,11 @@ structures.
 
 ## API Stability
 
-'Component' is new, experimental, subject to change, alpha, beta,
-gamma, delta, blah blah blah.
-
 I will make an effort not to break backwards compability between
 releases at the same 0.N version, e.g. 0.2.X and 0.2.Y
+
+Expects to find breaking changes between releases at different 0.N
+versions, e.g. 0.X and 0.Y.
 
 
 
@@ -133,13 +133,13 @@ First and foremost, this framework works best when all parts of an
 application follow the same pattern. It is not easy to retrofit the
 component model to an existing application without major refactoring.
 
-In particular, the 'component' code assumes that all application state
-is passed as arguments to the functions that use it. As a result, this
-framework may not work well with code which relies on global or
-singleton references.
+In particular, the 'component' library assumes that all application
+state is passed as arguments to the functions that use it. As a
+result, this framework may not work well with code which relies on
+global or singleton references.
 
 For small applications, declaring the dependency relationships among
-components may actually be harder than manually starting all the
+components may actually be more work than manually starting all the
 components in the correct order. You can still use the 'Lifecycle'
 protocol without using the dependency-injection features, but the
 added value of 'component' in that case is small.
@@ -247,10 +247,7 @@ depend.
     this))
 ```
 
-Not all the dependencies need to be supplied at construction time. In
-general, the constructor should not depend on other components being
-available or started.
-
+**Dependencies are not supplied at construction time.**
 A component's runtime dependencies will be injected into it by the
 system which contains it: see the next section.
 
@@ -267,20 +264,15 @@ Components are composed into systems. A system is a component which
 knows how to start and stop other components. It is also responsible
 for injecting dependencies into the components which need them.
 
+The easiest way to create a system is with the `system-map` function,
+which takes a series of key/value pairs just like the `hash-map` or
+`array-map` constructors.
+
+
+
 A system can use the helper functions `start-system` and `stop-system`,
 which take a set of keys naming components in the system to be
 started/stopped. Order of the keys doesn't matter here.
-
-```clojure
-(def example-system-components [:scheduler :app :db])
-
-(defrecord ExampleSystem [config-options db scheduler app]
-  component/Lifecycle
-  (start [this]
-    (component/start-system this example-system-components))
-  (stop [this]
-    (component/stop-system this example-system-components)))
-```
 
 When constructing the system, specify the dependency relationships
 among components with the `using` function.
@@ -288,14 +280,13 @@ among components with the `using` function.
 ```clojure
 (defn example-system [config-options]
   (let [{:keys [host port]} config-options]
-    (map->ExampleSystem
-      {:config-options config-options
-       :db (new-database host port)
-       :scheduler (new-scheduler)
-       :app (component/using
-              (example-component config-options)
-              {:database  :db
-               :scheduler :scheduler})})))
+    (component/system-map
+      :db (new-database host port)
+      :scheduler (new-scheduler)
+      :app (component/using
+             (example-component config-options)
+             {:database  :db
+              :scheduler :scheduler}))))
 ```
 
 `using` takes a component and a map telling the system where to
@@ -313,15 +304,15 @@ In the example above:
           :scheduler :scheduler})
     ;;     ^          ^
     ;;     |          |
-    ;;     |          \- Keys in the ExampleSystem record
+    ;;     |          \- Keys in the system map
     ;;     |
     ;;     \- Keys in the ExampleComponent record
 
-Based on this information (stored as metadata on the component
-records) the `start-system` function will construct a dependency graph
-of the components and start them all in the correct order.
+The system map provides its own implementations of the Lifecycle
+protocol which uses this dependency information (stored as metadata on
+the component) to start the components in the correct order.
 
-Before starting each component, `start-system` will `assoc` its
+Before starting each component, the system will `assoc` its
 dependencies based on the metadata provided by `using`.
 
 Again using the example above, the ExampleComponent would be started
@@ -336,8 +327,12 @@ as if by:
 
 Optionally, if the keys in the system map are the same as the keys in
 the component map, `using` can take a vector of those keys instead of
-a map. If you know the names of all the components in your system, you
-can add the metadata in the component's constructor:
+a map. 
+
+It doesn't matter *when* you associate dependency metadata on a
+component. If you know the names of all the components in your system
+in advance, you could choose add the metadata in the component's
+constructor:
 
 ```clojure
 (defrecord AnotherComponent [component-a component-b])
@@ -357,11 +352,11 @@ from component names to their dependencies.
 ```clojure
 (defn example-system [config-options]
   (let [{:keys [host port]} config-options]
-    (-> (map->ExampleSystem
-          {:config-options config-options
-           :db (new-database host port)
-           :scheduler (new-scheduler)
-           :app (example-component config-options)})
+    (-> (component/system-map
+          :config-options config-options
+          :db (new-database host port)
+          :scheduler (new-scheduler)
+          :app (example-component config-options))
         (component/system-using
           {:app {:database  :db
                  :scheduler :scheduler}}))))
@@ -407,9 +402,12 @@ following keys in its `ex-data` map:
 The original exception which the component threw is available as
 `.getCause` on the exception.
 
-'Component' makes no attempt to recover from errors in a component,
-but you can use the system attached to the exception to clean up any
-partially-constructed state.
+The 'component' library makes no attempt to recover from errors in a
+component, but you can use the system attached to the exception to
+clean up any partially-constructed state.
+
+
+### Idempotence
 
 You may find it useful to define your `start` and `stop` methods to be
 idempotent, i.e., to have effect only if the component is not already
@@ -429,9 +427,9 @@ started or stopped.
           (assoc this :connection nil)))))
 ```
 
-'Component' does not require that stop/start be idempotent, but
-idempotence can make it easier to clean up state after an error,
-because you can call `stop` indiscriminately on everything.
+The 'component' library does not require that stop/start be
+idempotent, but idempotence can make it easier to clean up state after
+an error, because you can call `stop` indiscriminately on everything.
 
 In addition, you could wrap the body of `stop` in a try/catch that
 ignores all exceptions. That way, errors stopping one component will
@@ -450,7 +448,7 @@ There is a default implementation of Lifecycle which is a no-op. If
 you omit the `Lifecycle` protocol from a component, it can still
 participate in the dependency injection process.
 
-You cannot omit just one of the `start` or `stop` methods: any
+You **cannot** omit just one of the `start` or `stop` methods: any
 component which implements `Lifecycle` must supply both.
 
 
@@ -565,9 +563,10 @@ following these guidelines:
 
 ### Customization
 
-The `start-system` and `stop-system` functions are just special cases
-of two other functions, `update-system` and `update-system-reverse`.
-(Added in 0.2.0)
+A system map is just a record that implements the Lifecycle protocol
+via two public functions, `start-system` and `stop-system`. These two
+functions are just special cases of two other functions,
+`update-system` and `update-system-reverse`. (Added in 0.2.0)
 
 You could, for example, define your own lifecycle functions as new
 protocols. You don't even have to use protocols and records;
