@@ -41,16 +41,6 @@ structures.
 
 
 
-## API Stability
-
-I will make an effort not to break backwards compability between
-releases at the same 0.N version, e.g. 0.2.X and 0.2.Y
-
-Expects to find breaking changes between releases at different 0.N
-versions, e.g. 0.X and 0.Y.
-
-
-
 ## Dependencies and Compatibility
 
 I have successfully tested 'Component' with Clojure versions
@@ -59,6 +49,21 @@ I have successfully tested 'Component' with Clojure versions
 'Component' uses my [dependency] library.
 
 [dependency]: https://github.com/stuartsierra/dependency
+
+
+### API Stability
+
+I will make an effort not to break backwards compability between
+releases at the same 0.N version, e.g. 0.2.X and 0.2.Y
+
+Expect to find breaking changes between releases at different 0.N
+versions, e.g. 0.X and 0.Y.
+
+
+
+## Discussion
+
+Please post questions on the [Clojure Mailing List](https://groups.google.com/forum/#!forum/clojure)
 
 
 
@@ -82,12 +87,11 @@ Some examples of components:
   reference such as a Clojure Atom or Ref
 
 A *component* is similar in spirit to the definition of an *object* in
-Object-Oriented Programming.
-
-Clojure is not an object-oriented programming language, so we do not
-have to cram everything into the OO model. Most functions are just
-functions. But real-world applications need to manage state.
-Components are a tool to help with that.
+Object-Oriented Programming. Clojure is not an object-oriented
+programming language, so we do not have to cram everything into the OO
+model. Most functions are just functions, and most data are just data.
+But real-world applications need to manage state. Components are a
+tool to help with that.
 
 
 ### Advantages of the Component Model
@@ -247,9 +251,9 @@ depend.
     this))
 ```
 
-**Dependencies are not supplied at construction time.**
-A component's runtime dependencies will be injected into it by the
-system which contains it: see the next section.
+**Do not pass component dependencies in a constructor.**
+Systems are responsible for injecting runtime dependencies into the
+components they contain: see the next section.
 
 ```clojure
 (defn example-component [config-options]
@@ -268,15 +272,6 @@ The easiest way to create a system is with the `system-map` function,
 which takes a series of key/value pairs just like the `hash-map` or
 `array-map` constructors.
 
-
-
-A system can use the helper functions `start-system` and `stop-system`,
-which take a set of keys naming components in the system to be
-started/stopped. Order of the keys doesn't matter here.
-
-When constructing the system, specify the dependency relationships
-among components with the `using` function.
-
 ```clojure
 (defn example-system [config-options]
   (let [{:keys [host port]} config-options]
@@ -289,27 +284,50 @@ among components with the `using` function.
               :scheduler :scheduler}))))
 ```
 
-`using` takes a component and a map telling the system where to
-find that component's dependencies. Keys in the map are the keys in
-the component record itself, values are the map are the
-corresponding keys in the system record.
+Specify the dependency relationships among components with the `using`
+function. `using` takes a component and a collection of keys naming
+that component's dependencies.
+
+If the component and the system use the same keys, then you can
+specify dependencies as a *vector* of keys:
+
+```clojure
+    (component/system-map
+      :database (new-database host port)
+      :scheduler (new-scheduler)
+      :app (component/using
+             (example-component config-options)
+             [:database :scheduler]))
+             ;; Both ExampleComponent and the system have
+             ;; keys :database and :scheduler
+```
+
+If the component and the system use *different* keys, then specify
+them as a map: Keys in the map are the keys in the component record
+itself, values are the map are the corresponding keys in the system
+record.
 
     {:component-key :system-key}
 
-In the example above:
+Using the same example:
 
-       (component/using
-         (example-component config-options)
-         {:database  :db
-          :scheduler :scheduler})
-    ;;     ^          ^
-    ;;     |          |
-    ;;     |          \- Keys in the system map
-    ;;     |
-    ;;     \- Keys in the ExampleComponent record
+```clojure
+    (component/system-map
+      :db (new-database host port)
+      :sched (new-scheduler)
+      :app (component/using
+             (example-component config-options)
+             {:database  :db
+              :scheduler :sched}))
+        ;;     ^          ^
+        ;;     |          |
+        ;;     |          \- Keys in the system map
+        ;;     |
+        ;;     \- Keys in the ExampleComponent record
+```
 
 The system map provides its own implementations of the Lifecycle
-protocol which uses this dependency information (stored as metadata on
+protocol which use this dependency information (stored as metadata on
 the component) to start the components in the correct order.
 
 Before starting each component, the system will `assoc` its
@@ -321,13 +339,9 @@ as if by:
 ```
 (-> example-component
     (assoc :database (:db system))
-    (assoc :scheduler (:scheduler system))
+    (assoc :scheduler (:sched system))
     (start))
 ```
-
-Optionally, if the keys in the system map are the same as the keys in
-the component map, `using` can take a vector of those keys instead of
-a map. 
 
 It doesn't matter *when* you associate dependency metadata on a
 component. If you know the names of all the components in your system
@@ -355,11 +369,11 @@ from component names to their dependencies.
     (-> (component/system-map
           :config-options config-options
           :db (new-database host port)
-          :scheduler (new-scheduler)
+          :sched (new-scheduler)
           :app (example-component config-options))
         (component/system-using
           {:app {:database  :db
-                 :scheduler :scheduler}}))))
+                 :scheduler :sched}}))))
 ```
 
 
@@ -401,6 +415,10 @@ following keys in its `ex-data` map:
 
 The original exception which the component threw is available as
 `.getCause` on the exception.
+
+Since the system map may be large, with a lot of repetition, you
+probably don't want to log or print this data. Instead, get the cause
+of the exception and print that.
 
 The 'component' library makes no attempt to recover from errors in a
 component, but you can use the system attached to the exception to
@@ -444,9 +462,11 @@ not prevent other components from shutting down cleanly.
 
 ### Stateless Components
 
-There is a default implementation of Lifecycle which is a no-op. If
-you omit the `Lifecycle` protocol from a component, it can still
-participate in the dependency injection process.
+The default implementation of `Lifecycle` is a no-op. If you omit the
+`Lifecycle` protocol from a component, it can still participate in the
+dependency injection process.
+
+Components which do not need lifecycle can be ordinary Clojure maps.
 
 You **cannot** omit just one of the `start` or `stop` methods: any
 component which implements `Lifecycle` must supply both.
@@ -520,8 +540,8 @@ top-level system as an argument. Rather, functions are defined in
 terms of components. Each component receives references only to the
 components on which it depends.
 
-The "application" or "business logic" may itself be represented by a
-component.
+The "application" or "business logic" may itself be represented by one
+or more components.
 
 Components may, of course, implement other protocols besides
 `Lifecycle`.
@@ -577,12 +597,14 @@ an argument and call it on each component in the system. Along the
 way, they `assoc` in the updated dependencies of each component.
 
 The `update-system` function iterates over the components in
-dependency order (a component will be called *after* its dependencies)
-the `update-system-reverse` function goes in reverse dependency order
-(a component will be called *before* its dependencies).
+dependency order (a component will be called *after* its
+dependencies). The `update-system-reverse` function goes in reverse
+dependency order (a component will be called *before* its
+dependencies).
 
 Calling `update-system` with the `identity` function is equivalent to
-doing just the dependency injection part of 'component'.
+doing just the dependency injection part of 'component' without
+`Lifecycle`.
 
 
 
