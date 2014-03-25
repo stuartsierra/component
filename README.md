@@ -344,9 +344,9 @@ as if by:
 ```
 
 It doesn't matter *when* you associate dependency metadata on a
-component. If you know the names of all the components in your system
-in advance, you could choose add the metadata in the component's
-constructor:
+component, as long as it happens before you call `start`. If you know
+the names of all the components in your system in advance, you could
+choose to add the metadata in the component's constructor:
 
 ```clojure
 (defrecord AnotherComponent [component-a component-b])
@@ -557,8 +557,8 @@ found a need for this.
 ### Notes for Library Authors
 
 'Component' is intended as a tool for applications, not resuable
-libraries. I do not believe that a general-purpose library should
-impose any particular framework on the application which uses it.
+libraries. I would not expect a general-purpose library to impose any
+particular framework on the applications which use it.
 
 That said, library authors can make it trivially easy for applications
 to use their libraries in combination with the 'Component' pattern by
@@ -568,7 +568,8 @@ following these guidelines:
   stored in a `def`).
 
 * Never rely on dynamic binding to convey state (for example, the
-  "current" database connection).
+  "current" database connection) unless that state is necessarily
+  confined to a single thread.
 
 * Never perform side effects at the top level of a source file.
 
@@ -611,7 +612,7 @@ doing just the dependency injection part of 'component' without
 ## References / More Information
 
 * [tools.namespace](https://github.com/clojure/tools.namespace)
-* [On the Perils of Dynamic Scope](http://stuartsierra.com/2013/03/29/perils-of-dynamic-scope).
+* [On the Perils of Dynamic Scope](http://stuartsierra.com/2013/03/29/perils-of-dynamic-scope)
 * [Clojure in the Large](http://www.infoq.com/presentations/Clojure-Large-scale-patterns-techniques) (video)
 * [Relevance Podcast Episode 32](http://thinkrelevance.com/blog/2013/05/29/stuart-sierra-episode-032) (audio)
 * [My Clojure Workflow, Reloaded](http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded)
