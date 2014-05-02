@@ -103,6 +103,7 @@
                          {:reason ::component-function-threw-exception
                           :function f
                           :component component
+                          :component-key key
                           :system system}
                          t)))))
 
