@@ -128,7 +128,7 @@
             (sort (dep/topo-comparator graph) component-keys))))
 
 (defn update-system-reverse
-  "Like update-system but operates in reverse-dependence order."
+  "Like update-system but operates in reverse dependency order."
   [system component-keys f & args]
   (let [graph (dependency-graph system component-keys)]
     (reduce (fn [system key]
