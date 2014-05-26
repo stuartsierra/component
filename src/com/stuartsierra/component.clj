@@ -94,6 +94,9 @@
              component
              (dependencies component)))
 
+(defn- dissoc-dependencies [component]
+  (reduce-kv #(dissoc %1 %3) component (dependencies component)))
+
 (defn- try-action [component system key f args]
   (try (apply f component args)
        (catch Throwable t
@@ -134,8 +137,8 @@
     (reduce (fn [system key]
               (assoc system key
                      (-> (get-component system key)
-                         (assoc-dependencies system)
-                         (try-action system key f args))))
+                         (try-action system key f args)
+                         (dissoc-dependencies))))
             system
             (reverse (sort (dep/topo-comparator graph) component-keys)))))
 
