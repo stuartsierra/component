@@ -102,6 +102,18 @@
 (defn component-e []
   (map->ComponentE {:state (rand-int Integer/MAX_VALUE)}))
 
+(defrecord ComponentF [state]
+  component/Lifecycle
+  (start [this]
+    (log 'ComponentF.start this)
+    (assoc this ::started? true))
+  (stop [this]
+    (log 'ComponentF.stop this)
+    (dissoc this ::started?)))
+
+(defn component-f []
+  (->ComponentF (rand-int Integer/MAX_VALUE)))
+
 (defrecord System1 [d a e c b]  ; deliberately scrambled order
   component/Lifecycle
   (start [this]
@@ -249,3 +261,16 @@
   (let [c (->ComponentWithoutLifecycle nil)]
     (is (= c (component/start c)))
     (is (= c (component/stop c)))))
+
+(deftest test-idempotence
+  (let [system (-> (component/system-map
+                    :f-1 (component-f)
+                    :f-2 (component-f)
+                    :f-3 (component-f))
+                   (component/system-using
+                    {:f-3 [:f-1 :f-2]}))
+        started (component/start system)]
+    (is (= started (component/start system)))
+    (let [stopped (component/stop started)]
+      (is (= system stopped))
+      (is (= stopped (component/stop stopped))))))
