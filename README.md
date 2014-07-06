@@ -7,7 +7,7 @@ This is primarily a design pattern with a few helper functions. It can
 be seen as a style of dependency injection using immutable data
 structures.
 
-
+See the [video from Clojure/West 2014](https://www.youtube.com/watch?v=13cmHf_kt-Q) (YouTube, 40 minutes)
 
 
 ## Releases and Dependency Information
@@ -44,7 +44,7 @@ structures.
 ## Dependencies and Compatibility
 
 I have successfully tested 'Component' with Clojure versions
-1.4.0 and 1.5.1.
+1.4.0, 1.5.1, and 1.6.0.
 
 'Component' uses my [dependency] library.
 
@@ -54,10 +54,10 @@ I have successfully tested 'Component' with Clojure versions
 ### API Stability
 
 I will make an effort not to break backwards compability between
-releases at the same 0.N version, e.g. 0.2.X and 0.2.Y
+releases at the same 0.N version, e.g. 0.2.1 and 0.2.2.
 
 Expect to find breaking changes between releases at different 0.N
-versions, e.g. 0.X and 0.Y.
+versions, e.g. 0.3.0 and 0.4.0.
 
 
 
@@ -203,8 +203,9 @@ To create a component, define a Clojure record that implements the
     ;; component and release any external resources it has
     ;; acquired.
     (.close connection)
-    ;; Return the component, optionally modified.
-    component))
+    ;; Return the component, optionally modified. Remember that if you
+    ;; dissoc one of a record's base fields, you get a plain map.
+    (assoc component :connection nil)))
 ```
 
 Optionally, provide a constructor function that takes arguments for
@@ -216,8 +217,8 @@ runtime state blank.
   (map->Database {:host host :port port}))
 ```
 
-Define the functions implementing the behavior of the
-component to take the component itself as an argument.
+Define the functions implementing the behavior of the component to
+take an **instance** of the component as an argument.
 
 ```clojure
 (defn get-user [database username]
@@ -326,8 +327,8 @@ Using the same example:
         ;;     \- Keys in the ExampleComponent record
 ```
 
-The system map provides its own implementations of the Lifecycle
-protocol which use this dependency information (stored as metadata on
+The system map provides its own implementation of the Lifecycle
+protocol which uses this dependency information (stored as metadata on
 the component) to start the components in the correct order.
 
 Before starting each component, the system will `assoc` its
@@ -343,6 +344,11 @@ as if by:
     (start))
 ```
 
+Stop a system by calling the `stop` method on it. This will stop each
+component, in *reverse* dependency order, and then re-assoc the
+dependencies of each component. **Note:** `stop` is not the exact
+inverse of `start`; component dependencies will still be associated.
+
 It doesn't matter *when* you associate dependency metadata on a
 component, as long as it happens before you call `start`. If you know
 the names of all the components in your system in advance, you could
@@ -353,7 +359,7 @@ choose to add the metadata in the component's constructor:
 
 (defrecord AnotherSystem [component-a component-b component-c])
 
-(defn another-component []
+(defn another-component []   ; constructor
   (component/using
     (map->AnotherComponent {})
     [:component-a :component-b]))
