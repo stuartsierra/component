@@ -617,6 +617,7 @@ doing just the dependency injection part of 'component' without
 
 ## References / More Information
 
+* [video from Clojure/West 2014](https://www.youtube.com/watch?v=13cmHf_kt-Q) (YouTube, 40 minutes)
 * [tools.namespace](https://github.com/clojure/tools.namespace)
 * [On the Perils of Dynamic Scope](http://stuartsierra.com/2013/03/29/perils-of-dynamic-scope)
 * [Clojure in the Large](http://www.infoq.com/presentations/Clojure-Large-scale-patterns-techniques) (video)
@@ -624,8 +625,6 @@ doing just the dependency injection part of 'component' without
 * [My Clojure Workflow, Reloaded](http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded)
 * [reloaded](https://github.com/stuartsierra/reloaded) Leiningen template
 * [Lifecycle Composition](http://stuartsierra.com/2013/09/15/lifecycle-composition)
-
-
 
 ## Change Log
 
