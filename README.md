@@ -613,7 +613,12 @@ Calling `update-system` with the `identity` function is equivalent to
 doing just the dependency injection part of 'component' without
 `Lifecycle`.
 
+## Readymades
 
+Several libraries built on top of component have seen the light in the Clojure community, providing ready-made components.
+
+* [system](https://github.com/danielsz/system)
+* [modular](https://github.com/juxt/modular)
 
 ## References / More Information
 
