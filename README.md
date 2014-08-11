@@ -186,7 +186,7 @@ To create a component, define a Clojure record that implements the
   ;; Implement the Lifecycle protocol
   component/Lifecycle
 
-  (start [component]
+  (start [this]
     (println ";; Starting database")
     ;; In the 'start' method, initialize this component
     ;; and start it running. For example, connect to a
@@ -195,9 +195,9 @@ To create a component, define a Clojure record that implements the
     (let [conn (connect-to-database host port)]
       ;; Return an updated version of the component with
       ;; the run-time state assoc'd in.
-      (assoc component :connection conn)))
+      (assoc this :connection conn)))
 
-  (stop [component]
+  (stop [this]
     (println ";; Stopping database")
     ;; In the 'stop' method, shut down the running
     ;; component and release any external resources it has
@@ -205,7 +205,7 @@ To create a component, define a Clojure record that implements the
     (.close connection)
     ;; Return the component, optionally modified. Remember that if you
     ;; dissoc one of a record's base fields, you get a plain map.
-    (assoc component :connection nil)))
+    (assoc this :connection nil)))
 ```
 
 Optionally, provide a constructor function that takes arguments for
