@@ -58,7 +58,7 @@
        (when-not component
          (throw (ex-info (str "Missing component " key " from system")
                          {:reason ::missing-component
-                          :component-key key
+                          :system-key key
                           :system system})))
        (assoc system key (using component dependencies))))
    system
@@ -110,7 +110,7 @@
   (or (get system key)
       (throw (ex-info (str "Missing component " key " from system")
                       {:reason ::missing-component
-                       :component-key key
+                       :system-key key
                        :system system}))))
 
 (defn update-system
