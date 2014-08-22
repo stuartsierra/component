@@ -187,6 +187,36 @@
             "system-map requires an even number of arguments")))
   (map->SystemMap (apply array-map keyvals)))
 
+(defn ex-component?
+  "True if the java.lang.Throwable has ex-data indicating it was
+  thrown by something in the com.stuartsierra.component namespace."
+  [throwable]
+  (let [{:keys [reason]} (ex-data throwable)]
+    (and (keyword? reason)
+         (= "com.stuartsierra.component"
+            (namespace reason)))))
+
+(defn ex-without-components
+  "If the java.lang.Throwable has ex-data provided by the
+  com.stuartsierra.component namespace, returns a new exception
+  instance with the :component and :system removed from its ex-data.
+  Preserves the message, cause, and stacktrace of the original
+  throwable. If the throwable was not created by this namespace,
+  returns it unchanged. Use this when you want to catch and rethrow
+  exceptions without including the full component or system."
+  [^Throwable throwable]
+  (if (ex-component? throwable)
+    (let [^Throwable ex
+          (ex-info (.getMessage throwable)
+                   (dissoc (ex-data throwable) :component :system)
+                   (.getCause throwable))]
+      ;; .getStackTrace should never be null, but .setStackTrace
+      ;; doesn't allow null, so we'll be careful
+      (when-let [stacktrace (.getStackTrace throwable)]
+        (.setStackTrace ex stacktrace))
+      ex)
+    throwable))
+
 ;; Copyright © 2013 Stuart Sierra
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy of
