@@ -80,7 +80,7 @@
   (let [dependency (get system system-key)]
     (when-not dependency
       (throw (ex-info (str "Missing dependency " dependency-key
-                           " in " (.getName (class component))
+                           " of " (.getName (class component))
                            " expected in system at " system-key)
                       {:reason ::missing-dependency
                        :system-key system-key
