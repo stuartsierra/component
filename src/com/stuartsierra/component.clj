@@ -102,6 +102,7 @@
                               " calling " f)
                          {:reason ::component-function-threw-exception
                           :function f
+                          :system-key key
                           :component component
                           :system system}
                          t)))))
