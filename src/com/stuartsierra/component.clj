@@ -56,7 +56,7 @@
    (fn [system key dependencies]
      (let [component (get system key)]
        (when-not component
-         (throw (ex-info "Missing component from system"
+         (throw (ex-info (str "Missing component " key " from system")
                          {:reason ::missing-component
                           :component-key key
                           :system system})))
