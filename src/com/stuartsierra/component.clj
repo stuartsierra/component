@@ -166,10 +166,20 @@
   (stop [system]
     (stop-system system)))
 
+(defmethod clojure.core/print-method SystemMap
+  [system ^java.io.Writer writer]
+  (.write writer "#<SystemMap>"))
+
 (defn system-map
   "Returns a system constructed of key/value pairs. The system has
   default implementations of the Lifecycle 'start' and 'stop' methods
-  which recursively start/stop all components in the system."
+  which recursively start/stop all components in the system.
+
+  System maps print as #<SystemMap> to avoid overwhelming the printer
+  with large objects. As a consequence, printed system maps cannot be
+  'read'. To disable this behavior and print system maps like normal
+  records, call
+  (remove-method clojure.core/print-method com.stuartsierra.component.SystemMap)"
   [& keyvals]
   ;; array-map doesn't check argument length (CLJ-1319)
   (when-not (even? (count keyvals))
