@@ -628,9 +628,21 @@ doing just the dependency injection part of 'component' without
 * [reloaded](https://github.com/stuartsierra/reloaded) Leiningen template
 * [Lifecycle Composition](http://stuartsierra.com/2013/09/15/lifecycle-composition)
 
+
+
 ## Change Log
 
-* Version 0.2.2-SNAPSHOT (current Git master branch)
+* Version 0.2.2-SNAPSHOT (in development)
+  * System maps print as `#<SystemMap>` to avoid trying to print huge
+    objects in the REPL
+  * Add error helpers `ex-component?` and `ex-without-components`
+  * Change `:component-key` to `:system-key` in `ex-data` maps:
+    breaking change for code which depended on the value of
+    `:component-key`
+  * Add `:system-key` to `ex-data` map from `try-action`
+  * Minor changes to exception message strings
+  * Leiningen profiles / aliases to test on all supported Clojure
+    versions
 * Version [0.2.1] released on December 17, 2013
   * Add generic `system-map`
   * More descriptive messages on exceptions
