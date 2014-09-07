@@ -14,25 +14,25 @@ See the [video from Clojure/West 2014](https://www.youtube.com/watch?v=13cmHf_kt
 
 * I publish releases to [Clojars]
 
-* Latest stable release is [0.2.1](https://github.com/stuartsierra/component/tree/component-0.2.1)
+* Latest stable release is [0.2.2](https://github.com/stuartsierra/component/tree/component-0.2.2)
 
 * [All releases](https://clojars.org/com.stuartsierra/component)
 
 [Leiningen] dependency information:
 
-    [com.stuartsierra/component "0.2.1"]
+    [com.stuartsierra/component "0.2.2"]
 
 [Maven] dependency information:
 
     <dependency>
       <groupId>com.stuartsierra</groupId>
       <artifactId>component</artifactId>
-      <version>0.2.1</version>
+      <version>0.2.2</version>
     </dependency>
 
 [Gradle] dependency information:
 
-    compile "com.stuartsierra:component:0.2.1"
+    compile "com.stuartsierra:component:0.2.2"
 
 [Clojars]: http://clojars.org/
 [Leiningen]: http://leiningen.org/
@@ -632,7 +632,8 @@ doing just the dependency injection part of 'component' without
 
 ## Change Log
 
-* Version 0.2.2-SNAPSHOT (in development)
+* Version 0.2.3-SNAPSHOT (in development)
+* Version [0.2.2] released on September 7, 2014
   * System maps print as `#<SystemMap>` to avoid trying to print huge
     objects in the REPL
   * Add error helpers `ex-component?` and `ex-without-components`
@@ -657,6 +658,7 @@ doing just the dependency injection part of 'component' without
   * `stop-system` now assoc's dependencies just like `start-system`
 * Version [0.1.0] released on October 28, 2013
 
+[0.2.2]: https://github.com/stuartsierra/component/tree/component-0.2.2
 [0.2.1]: https://github.com/stuartsierra/component/tree/component-0.2.1
 [0.2.0]: https://github.com/stuartsierra/component/tree/component-0.2.0
 [0.1.0]: https://github.com/stuartsierra/component/tree/component-0.1.0

@@ -1,4 +1,4 @@
-(defproject com.stuartsierra/component "0.2.2-SNAPSHOT"
+(defproject com.stuartsierra/component "0.2.2"
   :description "Managed lifecycle of stateful objects"
   :url "https://github.com/stuartsierra/component"
   :license {:name "The MIT License"
