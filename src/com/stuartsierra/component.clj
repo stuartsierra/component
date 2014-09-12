@@ -104,6 +104,7 @@
                           :function f
                           :system-key key
                           :component component
+                          :component-key key
                           :system system}
                          t)))))
 
