@@ -95,7 +95,7 @@
              (dependencies component)))
 
 (defn- try-action [component system key f args]
-  (try (apply f component args)
+  (try (apply f component (when args (with-meta args {::system system ::key key})))
        (catch Throwable t
          (throw (ex-info (str "Error in component " key
                               " in system " (.getName (class system))
