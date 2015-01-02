@@ -14,14 +14,17 @@
 (defn execute-insert [& _]
   (println ";; execute-insert"))
 
+(defrecord Scheduler []
+  component/Lifecycle
+  (start [this]
+    (println ";; Starting scheduler")
+    this)
+  (stop [this]
+    (println ";; Stopping scheduler")
+    this))
+
 (defn new-scheduler []
-  (reify component/Lifecycle
-    (start [this]
-      (println ";; Starting scheduler")
-      this)
-    (stop [this]
-      (println ";; Stopping scheduler")
-      this)))
+  (->Scheduler))
 
 
 ;;; Example database component
