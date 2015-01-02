@@ -633,6 +633,7 @@ doing just the dependency injection part of 'component' without
 ## Change Log
 
 * Version 0.2.3-SNAPSHOT (in development)
+  * Check and throw exception if a component is nil (GitHub #17)
 * Version [0.2.2] released on September 7, 2014
   * System maps print as `#<SystemMap>` to avoid trying to print huge
     objects in the REPL
