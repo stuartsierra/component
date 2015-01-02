@@ -273,3 +273,18 @@
   (let [c (->ComponentWithoutLifecycle nil)]
     (is (= c (component/start c)))
     (is (= c (component/stop c)))))
+
+(defrecord BadComponentReturnsNil []
+  component/Lifecycle
+  (start [this]
+    nil)
+  (stop [this]
+    nil))
+
+(deftest start-may-not-return-nil
+  (let [system (component/system-map :bad (->BadComponentReturnsNil))]
+    (is (thrown? Exception (component/start system)))))
+
+(deftest component-may-not-be-nil
+  (let [system (component/system-map :bad nil)]
+    (is (thrown? Exception (component/start system)))))
