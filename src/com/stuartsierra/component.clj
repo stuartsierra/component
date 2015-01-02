@@ -5,11 +5,11 @@
   (start [component]
     "Begins operation of this component. Synchronous, does not return
   until the component is started. Returns an updated version of this
-  component.")
+  component. Must not return nil.")
   (stop [component]
     "Ceases operation of this component. Synchronous, does not return
   until the component is stopped. Returns an updated version of this
-  component."))
+  component. Must not return nil."))
 
 ;; No-op implementation if one is not defined.
 (extend-protocol Lifecycle
@@ -94,6 +94,17 @@
              component
              (dependencies component)))
 
+(defn- assert-not-nil [component system key f]
+  (when (nil? component)
+    (throw (ex-info (str "Error: component " key
+                         " in system " (.getName (class system))
+                         " returned nil from " f)
+                    {:reason ::component-function-returned-nil
+                     :function f
+                     :system-key key
+                     :system system})))
+  component)
+
 (defn- try-action [component system key f args]
   (try (apply f component args)
        (catch Throwable t
@@ -108,11 +119,18 @@
                          t)))))
 
 (defn- get-component [system key]
-  (or (get system key)
+  (let [component (get system key ::not-found)]
+    (when (= component ::not-found)
       (throw (ex-info (str "Missing component " key " from system")
                       {:reason ::missing-component
                        :system-key key
-                       :system system}))))
+                       :system system})))
+    (when (nil? component)
+      (throw (ex-info (str "Component " key " is nil")
+                      {:reason ::component-is-nil
+                       :system-key key
+                       :system system})))
+    component))
 
 (defn update-system
   "Invokes (apply f component args) on each of the components at
@@ -124,7 +142,8 @@
               (assoc system key
                      (-> (get-component system key)
                          (assoc-dependencies system)
-                         (try-action system key f args))))
+                         (try-action system key f args)
+                         (assert-not-nil system key f))))
             system
             (sort (dep/topo-comparator graph) component-keys))))
 
@@ -136,7 +155,8 @@
               (assoc system key
                      (-> (get-component system key)
                          (assoc-dependencies system)
-                         (try-action system key f args))))
+                         (try-action system key f args)
+                         (assert-not-nil system key f))))
             system
             (reverse (sort (dep/topo-comparator graph) component-keys)))))
 
