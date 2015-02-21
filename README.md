@@ -340,7 +340,7 @@ Again using the example above, the ExampleComponent would be started
 as if by:
 
 ```
-(-> example-component
+(-> (example-component config-options)
     (assoc :database (:db system))
     (assoc :scheduler (:sched system))
     (start))
