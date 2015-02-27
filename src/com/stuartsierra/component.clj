@@ -46,6 +46,38 @@
                        :component component
                        :dependencies dependencies})))))
 
+(defn- nil-component [system key]
+  (ex-info (str "Component " key " was nil in system; maybe it returned nil from start or stop")
+           {:reason ::nil-component
+            :system-key key
+            :system system}))
+
+(defn- get-component [system key]
+  (let [component (get system key ::not-found)]
+    (when (nil? component)
+      (throw (nil-component system key)))
+    (when (= ::not-found component)
+      (throw (ex-info (str "Missing component " key " from system")
+                      {:reason ::missing-component
+                       :system-key key
+                       :system system})))
+    component))
+
+(defn- get-dependency [system system-key component dependency-key]
+  (let [component (get system system-key ::not-found)]
+    (when (nil? component)
+      (throw (nil-component system system-key)))
+    (when (= ::not-found component)
+      (throw (ex-info (str "Missing dependency " dependency-key
+                           " of " (.getName (class component))
+                           " expected in system at " system-key)
+                      {:reason ::missing-dependency
+                       :system-key key
+                       :dependency-key dependency-key
+                       :component component
+                       :system system})))
+    component))
+
 (defn system-using
   "Associates dependency metadata with multiple components in the
   system. dependency-map is a map of keys in the system to maps or
@@ -54,12 +86,7 @@
   [system dependency-map]
   (reduce-kv
    (fn [system key dependencies]
-     (let [component (get system key)]
-       (when-not component
-         (throw (ex-info (str "Missing component " key " from system")
-                         {:reason ::missing-component
-                          :system-key key
-                          :system system})))
+     (let [component (get-component system key)]
        (assoc system key (using component dependencies))))
    system
    dependency-map))
@@ -77,16 +104,7 @@
              (select-keys system component-keys)))
 
 (defn- assoc-dependency [system component dependency-key system-key]
-  (let [dependency (get system system-key)]
-    (when-not dependency
-      (throw (ex-info (str "Missing dependency " dependency-key
-                           " of " (.getName (class component))
-                           " expected in system at " system-key)
-                      {:reason ::missing-dependency
-                       :system-key system-key
-                       :dependency-key dependency-key
-                       :component component
-                       :system system})))
+  (let [dependency (get-dependency system system-key component dependency-key)]
     (assoc component dependency-key dependency)))
 
 (defn- assoc-dependencies [component system]
@@ -106,13 +124,6 @@
                           :component component
                           :system system}
                          t)))))
-
-(defn- get-component [system key]
-  (or (get system key)
-      (throw (ex-info (str "Missing component " key " from system")
-                      {:reason ::missing-component
-                       :system-key key
-                       :system system}))))
 
 (defn update-system
   "Invokes (apply f component args) on each of the components at

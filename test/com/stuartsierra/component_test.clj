@@ -273,3 +273,18 @@
   (let [c (->ComponentWithoutLifecycle nil)]
     (is (= c (component/start c)))
     (is (= c (component/stop c)))))
+
+(defrecord ComponentReturningNil [state]
+  component/Lifecycle
+  (start [this]
+    nil)
+  (stop [this]
+    nil))
+
+(deftest component-returning-nil
+  (let [a (->ComponentReturningNil nil)
+        s (component/system-map :a a :b (component-b))
+        e (try (component/start s)
+               false
+               (catch Exception e e))]
+    (is (= ::component/nil-component (:reason (ex-data e))))))
