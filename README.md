@@ -633,6 +633,7 @@ doing just the dependency injection part of 'component' without
 ## Change Log
 
 * Version 0.2.4-SNAPSHOT (in development)
+  * Current Git `master` branch
 * Version [0.2.3] released on March 3, 2015
   * More-specific error message when a component returns `nil` from
     `start` or `stop`: see [commit fb891500]
