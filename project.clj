@@ -9,7 +9,7 @@
   :aliases {"test-all"
             ["with-profile" "clj1.4:clj1.5:clj1.6:clj1.7" "test"]}
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.6.0"]
-                                  [org.clojure/tools.namespace "0.2.4"]]
+                                  [org.clojure/tools.namespace "0.2.10"]]
                    :source-paths ["dev"]}
              :clj1.7 {:dependencies [[org.clojure/clojure "1.7.0-master-SNAPSHOT"]]
                       :repositories {"sonatype-oss-public"
