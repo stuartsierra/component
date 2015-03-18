@@ -11,6 +11,24 @@
   until the component is stopped. Returns an updated version of this
   component."))
 
+(defprotocol Idempotent
+  (started? [component]
+    "True if this component has been started, false otherwise."))
+
+(defn should-start?
+  "True if the component should be started as the next action."
+  [component]
+  (if (satisfies? Idempotent component)
+    (not (started? component))
+    true))
+
+(defn should-stop?
+  "True if the component should be stopped as the next action."
+  [component]
+  (if (satisfies? Idempotent component)
+    (started? component)
+    true))
+
 ;; No-op implementation if one is not defined.
 (extend-protocol Lifecycle
   java.lang.Object
@@ -125,29 +143,31 @@
                           :system system}
                          t)))))
 
+(defn- try-with-component [system key f pred args]
+  (let [component (get-component system key)]
+    (if (pred component)
+      (-> component
+          (assoc-dependencies system)
+          (try-action system key f args))
+      component)))
+
 (defn update-system
   "Invokes (apply f component args) on each of the components at
   component-keys in the system, in dependency order. Before invoking
   f, assoc's updated dependencies of the component."
-  [system component-keys f & args]
+  [system component-keys p f & args]
   (let [graph (dependency-graph system component-keys)]
     (reduce (fn [system key]
-              (assoc system key
-                     (-> (get-component system key)
-                         (assoc-dependencies system)
-                         (try-action system key f args))))
+              (assoc system key (try-with-component system key f p args)))
             system
             (sort (dep/topo-comparator graph) component-keys))))
 
 (defn update-system-reverse
   "Like update-system but operates in reverse dependency order."
-  [system component-keys f & args]
+  [system component-keys p f & args]
   (let [graph (dependency-graph system component-keys)]
     (reduce (fn [system key]
-              (assoc system key
-                     (-> (get-component system key)
-                         (assoc-dependencies system)
-                         (try-action system key f args))))
+              (assoc system key (try-with-component system key f p args)))
             system
             (reverse (sort (dep/topo-comparator graph) component-keys)))))
 
@@ -159,7 +179,8 @@
   ([system]
      (start-system system (keys system)))
   ([system component-keys]
-     (update-system system component-keys #'start)))
+     (vary-meta (update-system system component-keys should-start? #'start)
+                assoc ::started true)))
 
 (defn stop-system
   "Recursively stops components in the system, in reverse dependency
@@ -169,14 +190,23 @@
   ([system]
      (stop-system system (keys system)))
   ([system component-keys]
-     (update-system-reverse system component-keys #'stop)))
+     (vary-meta (update-system-reverse system component-keys should-stop? #'stop)
+                assoc ::started false)))
 
 (defrecord SystemMap []
   Lifecycle
   (start [system]
-    (start-system system))
+    (if (should-start? system)
+      (start-system system)
+      system))
   (stop [system]
-    (stop-system system)))
+    (if (should-stop? system)
+      (stop-system system)
+      system))
+
+  Idempotent
+  (started? [system]
+    (::started (meta system))))
 
 (defmethod clojure.core/print-method SystemMap
   [system ^java.io.Writer writer]
