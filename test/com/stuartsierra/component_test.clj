@@ -1,7 +1,8 @@
 (ns com.stuartsierra.component-test
   (:require [clojure.test :refer (deftest is are)]
             [clojure.set :refer (map-invert)]
-            [com.stuartsierra.component :as component]))
+            [com.stuartsierra.component :as component])
+  (:import [com.stuartsierra.component SystemMap]))
 
 (def ^:dynamic *log* nil)
 
@@ -230,7 +231,7 @@
 
 (defn increment-all-components [system]
   (component/update-system
-   system (keys system) update-in [:n] inc))
+   system (keys system) (constantly true) update-in [:n] inc))
 
 (defn assert-increments [system]
   (are [n keys] (= n (get-in system keys))
@@ -288,3 +289,56 @@
                false
                (catch Exception e e))]
     (is (= ::component/nil-component (:reason (ex-data e))))))
+
+(def sys1 (component/system-map
+            :x (component/using {:msg "depends on dep"} [:dep])))
+(def sys2 (component/system-map
+            :y (component/using {:msg "depends on sys1"} [:sys1])))
+(def hsys (component/system-map
+            :sys1 (component/using sys1 [:dep])
+            :sys2 (component/using sys2 [:sys1])
+            :dep {:msg "dependency"}))
+
+(defn- as-maps [system]
+  (clojure.walk/prewalk
+    (fn [x]
+      (if (instance? SystemMap x)
+        (into {} x)
+        x))
+    system))
+
+(deftest nested-systems
+  (let [started-sys1 {:dep {:msg "dependency"}
+                      :x {:dep {:msg "dependency"}
+                          :msg "depends on dep"}}]
+    (is (= {:dep {:msg "dependency"}
+            :sys1 started-sys1
+            :sys2 {:sys1 started-sys1
+                   :y {:msg "depends on sys1"
+                       :sys1 started-sys1}}}
+           (as-maps (component/start hsys))))))
+
+(defrecord IdempotentComponent [cnt]
+  component/Lifecycle
+  (start [this]
+    (if (component/should-start? this)
+      (update-in this [:cnt] (fnil inc 0))
+      this))
+  (stop [this]
+    (if (component/should-stop? this)
+      (update-in this [:cnt] (fnil dec 0))
+      this))
+  component/Idempotent
+  (started? [this] (> cnt 0)))
+
+(deftest idempotent-component
+  (let [cmp (IdempotentComponent. 0)
+        started-once (component/start cmp)
+        started-twice (component/start started-once)]
+    (is (component/started? started-once))
+    (is (component/started? started-twice))
+    (is (= started-once started-twice))
+
+    (is (not (component/started? cmp)))
+    (is (not (component/started? (component/stop started-once))))
+    (is (= (component/stop started-once) (component/stop started-twice)))))
