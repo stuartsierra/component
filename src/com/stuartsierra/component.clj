@@ -31,17 +31,17 @@
   provided by its containing system. Values in the map are the keys in
   the system at which those components may be found. Alternatively, if
   the keys are the same in both the component and its enclosing
-  system, they may be specified as a vector of keys."
+  system, they may be specified as a sequence of keys."
   [component dependencies]
   (vary-meta
    component update-in [::dependencies] (fnil merge {})
    (cond
     (map? dependencies)
       dependencies
-    (vector? dependencies)
+    (sequential? dependencies)
       (into {} (map (fn [x] [x x]) dependencies))
     :else
-      (throw (ex-info "Dependencies must be a map or vector"
+      (throw (ex-info "Dependencies must be a map or sequential"
                       {:reason ::invalid-dependencies
                        :component component
                        :dependencies dependencies})))))
@@ -81,7 +81,7 @@
 (defn system-using
   "Associates dependency metadata with multiple components in the
   system. dependency-map is a map of keys in the system to maps or
-  vectors specifying the dependencies of the component at that key in
+  sequential specifying the dependencies of the component at that key in
   the system, as per 'using'."
   [system dependency-map]
   (reduce-kv
