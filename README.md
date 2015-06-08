@@ -561,6 +561,11 @@ for testing) can be injected into a system with `assoc` before calling
 Systems may be composed into larger systems, although I have not yet
 found a need for this.
 
+####Using your components
+
+Now that you have your `system` started you can use it. To do so would look something like:
+
+`(add-user (:db system) "stuartsierra" "red")`
 
 ### Notes for Library Authors
 
