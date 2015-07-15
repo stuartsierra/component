@@ -288,3 +288,15 @@
                false
                (catch Exception e e))]
     (is (= ::component/nil-component (:reason (ex-data e))))))
+
+(defrecord FooBazComponent [foo baz spam])
+
+(deftest destructured-using
+  (let [s (component/system-map :settings {:foo :foo :bar :bar}
+                                :other-settings {:spam :eggs}
+                                :foo-baz (component/using (->FooBazComponent)
+                                                          {{baz :bar} :settings
+                                                           {:keys [spam]} :other-settings}))
+        ss (component/start s)]
+    (is (= :bar (get-in ss [:foo-baz :baz])))
+    (is (= :eggs (get-in ss [:foo-baz :spam])))))
