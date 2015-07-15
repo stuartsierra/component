@@ -291,12 +291,18 @@
 
 (defrecord FooBazComponent [foo baz spam])
 
+(def du-system
+  {:settings {:foo :foo :bar :bar}
+   :other-settings {:spam :eggs}
+   :foo-baz (component/using (map->FooBazComponent {})
+                             {{baz :bar} :settings
+                              {:keys [spam]} :other-settings})})
+
+(def du-system-map
+  (apply component/system-map (apply concat du-system)))
+
 (deftest destructured-using
-  (let [s (component/system-map :settings {:foo :foo :bar :bar}
-                                :other-settings {:spam :eggs}
-                                :foo-baz (component/using (->FooBazComponent)
-                                                          {{baz :bar} :settings
-                                                           {:keys [spam]} :other-settings}))
+  (let [s du-system-map
         ss (component/start s)]
     (is (= :bar (get-in ss [:foo-baz :baz])))
     (is (= :eggs (get-in ss [:foo-baz :spam])))))
