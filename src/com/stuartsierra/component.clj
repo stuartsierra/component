@@ -121,16 +121,11 @@
         pred (fn [[s _]] (boolean (some #(.startsWith (str s) %) blacklist)))]
     (remove pred m)))
 
-(defn- extract-assoc-lookups-from-destructured-bindings
-  [bindings]
-  (some->> (find-user-symbols-in-destructured-bindings bindings)
-           (map (fn [[k v]] [(keyword k) k]))
-           (into {})))
-
 (defmacro destructure-dependency
   [dependency bindings]
   `(let [bindings# (destructure [~bindings ~dependency])
-         dep-lookups# (extract-assoc-lookups-from-destructured-bindings bindings#)]
+         dep-lookups# (for [[k# v#] (find-user-symbols-in-destructured-bindings bindings#)]
+                        [(keyword k#) k#])]
      [bindings# dep-lookups#]))
 
 (defmacro manual-let
@@ -145,10 +140,12 @@
       ;; old path, this is at most a renaming
       (assoc component dependency-bindings dependency)
       ;; destructure the dependency-bindings
-      (let [[bindings dep-lookups] (destructure-dependency dependency dependency-bindings)]
-        (assoc component
-               (ffirst dep-lookups)
-               (eval `(manual-let ~bindings (second (first ~dep-lookups)))))))))
+      (let [[bindings dep-lookups] (destructure-dependency dependency dependency-bindings)
+            pairs (mapcat (fn [[kw sym]]
+                            [kw (eval `(manual-let ~bindings ~sym))])
+                         dep-lookups)]
+
+            (apply assoc component pairs)))))
 
 (defn- assoc-dependencies [component system]
   (reduce-kv #(assoc-dependency system %1 %2 %3)
