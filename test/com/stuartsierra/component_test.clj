@@ -1,5 +1,5 @@
 (ns com.stuartsierra.component-test
-  (:require [clojure.test :refer (deftest is are)]
+  (:require [clojure.test :refer (deftest is are testing)]
             [clojure.set :refer (map-invert)]
             [com.stuartsierra.component :as component]))
 
@@ -288,3 +288,33 @@
                false
                (catch Exception e e))]
     (is (= ::component/nil-component (:reason (ex-data e))))))
+
+(defrecord FooBazComponent [foo baz spam])
+
+(def du-system
+  {:settings {:foo :foo :bar :bar}
+   :other-settings {:spam :eggs}
+   :nested-settings {:foo {:bar {:pika :chu :bulba :saur}}}
+   :foo-baz (component/using (map->FooBazComponent {})
+                             {{baz :bar} :settings
+                              {:keys [spam]} :other-settings})
+   :other-foo-baz (component/using (map->FooBazComponent {})
+                                   {{baz :bar spam :foo} :settings})
+   :third-foo-baz (component/using (map->FooBazComponent {})
+                                   {{{{spam :pika foo :bulba} :bar} :foo} :nested-settings})})
+
+(def du-system-map
+  (apply component/system-map (apply concat du-system)))
+
+(deftest destructured-using
+  (let [s du-system-map
+        ss (component/start s)]
+    (testing "basic destructuring"
+      (is (= :bar (get-in ss [:foo-baz :baz])))
+      (is (= :eggs (get-in ss [:foo-baz :spam]))))
+    (testing "multiple values destructured"
+      (is (and (= :foo (get-in ss [:other-foo-baz :spam]))
+               (= :bar (get-in ss [:other-foo-baz :baz])))))
+    (testing "nested destructuring"
+      (is (and (= :chu (get-in ss [:third-foo-baz :spam]))
+               (= :saur (get-in ss [:third-foo-baz :foo])))))))

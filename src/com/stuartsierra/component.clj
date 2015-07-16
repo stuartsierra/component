@@ -24,7 +24,7 @@
   [component]
   (::dependencies (meta component) {}))
 
-(defn using
+(defn using*
   "Associates metadata with component describing the other components
   on which it depends. Component dependencies are specified as a map.
   Keys in the map correspond to keys in this component which must be
@@ -40,11 +40,21 @@
       dependencies
     (vector? dependencies)
       (into {} (map (fn [x] [x x]) dependencies))
+
     :else
       (throw (ex-info "Dependencies must be a map or vector"
                       {:reason ::invalid-dependencies
                        :component component
                        :dependencies dependencies})))))
+
+(defmacro using
+  "Like using*, but instead of simple renaming of dependencies for a map,
+   allow complex destructuring."
+  [component dependencies]
+  `(using* ~component
+           ~(if (map? dependencies)
+              `(quote ~dependencies)
+              dependencies)))
 
 (defn- nil-component [system key]
   (ex-info (str "Component " key " was nil in system; maybe it returned nil from start or stop")
@@ -103,9 +113,39 @@
              (dep/graph)
              (select-keys system component-keys)))
 
-(defn- assoc-dependency [system component dependency-key system-key]
-  (let [dependency (get-dependency system system-key component dependency-key)]
-    (assoc component dependency-key dependency)))
+
+(defn- find-user-symbols-in-destructured-bindings
+  [bindings]
+  (let [blacklist ["map__" "vec__"]
+        m (apply hash-map bindings)
+        pred (fn [[s _]] (boolean (some #(.startsWith (str s) %) blacklist)))]
+    (remove pred m)))
+
+(defmacro destructure-dependency
+  [dependency bindings]
+  `(let [bindings# (destructure [~bindings ~dependency])
+         dep-lookups# (for [[k# v#] (find-user-symbols-in-destructured-bindings bindings#)]
+                        [(keyword k#) k#])]
+     [bindings# dep-lookups#]))
+
+(defmacro manual-let
+  [bindings & body]
+  (cons 'let*
+        (list (apply vector bindings)
+              (cons 'do body))))
+
+(defn- assoc-dependency [system component dependency-bindings system-key]
+  (let [dependency (get-dependency system system-key component dependency-bindings)]
+    (if (keyword? dependency-bindings)
+      ;; old path, this is at most a renaming
+      (assoc component dependency-bindings dependency)
+      ;; destructure the dependency-bindings
+      (let [[bindings dep-lookups] (destructure-dependency dependency dependency-bindings)
+            pairs (mapcat (fn [[kw sym]]
+                            [kw (eval `(manual-let ~bindings ~sym))])
+                         dep-lookups)]
+
+            (apply assoc component pairs)))))
 
 (defn- assoc-dependencies [component system]
   (reduce-kv #(assoc-dependency system %1 %2 %3)
