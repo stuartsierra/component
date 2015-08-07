@@ -1,5 +1,6 @@
 (ns com.stuartsierra.component
-  (:require [com.stuartsierra.dependency :as dep]))
+  (:require [com.stuartsierra.dependency :as dep]
+            [com.stuartsierra.component.platform :as platform]))
 
 (defprotocol Lifecycle
   (start [component]
@@ -13,7 +14,7 @@
 
 ;; No-op implementation if one is not defined.
 (extend-protocol Lifecycle
-  java.lang.Object
+  #?(:clj java.lang.Object :cljs object)
   (start [this]
     this)
   (stop [this]
@@ -69,7 +70,7 @@
       (throw (nil-component system system-key)))
     (when (= ::not-found component)
       (throw (ex-info (str "Missing dependency " dependency-key
-                           " of " (.getName (class component))
+                           " of " (platform/type-name component)
                            " expected in system at " system-key)
                       {:reason ::missing-dependency
                        :system-key key
@@ -114,9 +115,9 @@
 
 (defn- try-action [component system key f args]
   (try (apply f component args)
-       (catch Throwable t
+       (catch #?(:clj Throwable :cljs :default) t
          (throw (ex-info (str "Error in component " key
-                              " in system " (.getName (class system))
+                              " in system " (platform/type-name system)
                               " calling " f)
                          {:reason ::component-function-threw-exception
                           :function f
@@ -178,9 +179,15 @@
   (stop [system]
     (stop-system system)))
 
-(defmethod clojure.core/print-method SystemMap
-  [system ^java.io.Writer writer]
-  (.write writer "#<SystemMap>"))
+#?(:clj
+   (defmethod clojure.core/print-method SystemMap
+     [system ^java.io.Writer writer]
+     (.write writer "#<SystemMap>"))
+   :cljs
+   (extend-protocol IPrintWithWriter
+     SystemMap
+     (-pr-writer [this writer opts]
+       (-write writer "#<SystemMap>"))))
 
 (defn system-map
   "Returns a system constructed of key/value pairs. The system has
@@ -195,41 +202,32 @@
   [& keyvals]
   ;; array-map doesn't check argument length (CLJ-1319)
   (when-not (even? (count keyvals))
-    (throw (IllegalArgumentException.
+    (throw (platform/argument-error
             "system-map requires an even number of arguments")))
   (map->SystemMap (apply array-map keyvals)))
 
 (defn ex-component?
-  "True if the java.lang.Throwable has ex-data indicating it was
-  thrown by something in the com.stuartsierra.component namespace."
-  [throwable]
-  (let [{:keys [reason]} (ex-data throwable)]
+  "True if the error has ex-data indicating it was thrown by something
+  in the com.stuartsierra.component namespace."
+  [error]
+  (let [{:keys [reason]} (ex-data error)]
     (and (keyword? reason)
          (= "com.stuartsierra.component"
             (namespace reason)))))
 
 (defn ex-without-components
-  "If the java.lang.Throwable has ex-data provided by the
-  com.stuartsierra.component namespace, returns a new exception
-  instance with the :component and :system removed from its ex-data.
-  Preserves the message, cause, and stacktrace of the original
-  throwable. If the throwable was not created by this namespace,
+  "If the error has ex-data provided by the com.stuartsierra.component
+  namespace, returns a new exception instance with the :component
+  and :system removed from its ex-data. Preserves the other details of
+  the original error. If the error was not created by this namespace,
   returns it unchanged. Use this when you want to catch and rethrow
   exceptions without including the full component or system."
-  [^Throwable throwable]
-  (if (ex-component? throwable)
-    (let [^Throwable ex
-          (ex-info (.getMessage throwable)
-                   (dissoc (ex-data throwable) :component :system)
-                   (.getCause throwable))]
-      ;; .getStackTrace should never be null, but .setStackTrace
-      ;; doesn't allow null, so we'll be careful
-      (when-let [stacktrace (.getStackTrace throwable)]
-        (.setStackTrace ex stacktrace))
-      ex)
-    throwable))
+  [error]
+  (if (ex-component? error)
+    (platform/alter-ex-data error dissoc :component :system)
+    error))
 
-;; Copyright © 2013 Stuart Sierra
+;; Copyright © 2015 Stuart Sierra
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy of
 ;; this software and associated documentation files (the "Software"), to deal in
