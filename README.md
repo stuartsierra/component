@@ -271,7 +271,7 @@ for injecting dependencies into the components which need them.
 
 The easiest way to create a system is with the `system-map` function,
 which takes a series of key/value pairs just like the `hash-map` or
-`array-map` constructors. Keys in the system map are the usually
+`array-map` constructors. Keys in the system map are usually
 keywords. Values in the system map are *instances* of components,
 usually records or maps.
 
