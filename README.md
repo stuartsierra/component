@@ -307,7 +307,7 @@ specify dependencies as a *vector* of keys:
 
 If the component and the system use *different* keys, then specify
 them as a map: Keys in the map are the keys in the component record
-itself, values are the map are the corresponding keys in the system
+itself, values in the map are the corresponding keys in the system
 record.
 
     {:component-key :system-key}
