@@ -1,7 +1,7 @@
-# component
+# Component
 
-'Component' is a tiny Clojure framework for managing the lifecycle of
-software components which have runtime state.
+'Component' is a tiny Clojure framework for managing the lifecycle and
+dependencies of software components which have runtime state.
 
 This is primarily a design pattern with a few helper functions. It can
 be seen as a style of dependency injection using immutable data
@@ -14,25 +14,25 @@ See the [video from Clojure/West 2014](https://www.youtube.com/watch?v=13cmHf_kt
 
 * I publish releases to [Clojars]
 
-* Latest stable release is [0.2.3](https://github.com/stuartsierra/component/tree/component-0.2.3)
+* Latest stable release is [0.3.0](https://github.com/stuartsierra/component/tree/component-0.3.0)
 
 * [All releases](https://clojars.org/com.stuartsierra/component)
 
 [Leiningen] dependency information:
 
-    [com.stuartsierra/component "0.2.3"]
+    [com.stuartsierra/component "0.3.0"]
 
 [Maven] dependency information:
 
     <dependency>
       <groupId>com.stuartsierra</groupId>
       <artifactId>component</artifactId>
-      <version>0.2.3</version>
+      <version>0.3.0</version>
     </dependency>
 
 [Gradle] dependency information:
 
-    compile "com.stuartsierra:component:0.2.3"
+    compile "com.stuartsierra:component:0.3.0"
 
 [Clojars]: http://clojars.org/
 [Leiningen]: http://leiningen.org/
@@ -43,21 +43,15 @@ See the [video from Clojure/West 2014](https://www.youtube.com/watch?v=13cmHf_kt
 
 ## Dependencies and Compatibility
 
-I have successfully tested 'Component' with Clojure versions
-1.4.0, 1.5.1, and 1.6.0.
+Version 0.3.0 of 'Component' requires Clojure or ClojureScript
+version 1.7.0 or later.
 
-'Component' uses my [dependency] library.
+Version 0.2.3 of 'Component' is compatible with
+Clojure versions 1.4.0 and higher.
+
+'Component' requires my [dependency] library
 
 [dependency]: https://github.com/stuartsierra/dependency
-
-
-### API Stability
-
-I will make an effort not to break backwards compability between
-releases at the same 0.N version, e.g. 0.2.1 and 0.2.2.
-
-Expect to find breaking changes between releases at different 0.N
-versions, e.g. 0.3.0 and 0.4.0.
 
 
 
@@ -271,9 +265,9 @@ for injecting dependencies into the components which need them.
 
 The easiest way to create a system is with the `system-map` function,
 which takes a series of key/value pairs just like the `hash-map` or
-`array-map` constructors. Keys in the system map are the usually
-keywords. Values in the system map are *instances* of components,
-usually records or maps.
+`array-map` constructors. Keys in the system map are keywords. Values
+in the system map are *instances* of components, usually records or
+maps.
 
 ```clojure
 (defn example-system [config-options]
@@ -306,13 +300,9 @@ specify dependencies as a *vector* of keys:
 ```
 
 If the component and the system use *different* keys, then specify
-them as a map: Keys in the map are the keys in the component record
-itself, values are the map are the corresponding keys in the system
-record.
-
-    {:component-key :system-key}
-
-Using the same example:
+them as a map of `{:component-key :system-key}`.
+That is, the `using` keys match the keys in the component,
+the values match keys in the system.
 
 ```clojure
     (component/system-map
@@ -331,13 +321,13 @@ Using the same example:
 
 The system map provides its own implementation of the Lifecycle
 protocol which uses this dependency information (stored as metadata on
-the component) to start the components in the correct order.
+each component) to start the components in the correct order.
 
 Before starting each component, the system will `assoc` its
 dependencies based on the metadata provided by `using`.
 
 Again using the example above, the ExampleComponent would be started
-as if by:
+*as if* you did this:
 
 ```
 (-> example-component
@@ -424,13 +414,17 @@ following keys in its `ex-data` map:
 The original exception which the component threw is available as
 `.getCause` on the exception.
 
-Since the system map may be large, with a lot of repetition, you
-probably don't want to log or print this data. Instead, get the cause
-of the exception and print that.
-
-The 'component' library makes no attempt to recover from errors in a
-component, but you can use the system attached to the exception to
+The 'Component' library makes no attempt to recover from errors in a
+component, but you can use the `:system` attached to the exception to
 clean up any partially-constructed state.
+
+Since component maps may be large, with a lot of repetition, you
+probably don't want to log or print this exception as-is. The
+`ex-without-components` helper function will remove the larger objects
+from an exception.
+
+The `ex-component?` helper function tells you if an exception was
+originated or wrapped by 'Component'.
 
 
 ### Idempotence
@@ -453,7 +447,7 @@ started or stopped.
           (assoc this :connection nil)))))
 ```
 
-The 'component' library does not require that stop/start be
+The 'Component' library does not require that stop/start be
 idempotent, but idempotence can make it easier to clean up state after
 an error, because you can call `stop` indiscriminately on everything.
 
@@ -474,7 +468,7 @@ The default implementation of `Lifecycle` is a no-op. If you omit the
 `Lifecycle` protocol from a component, it can still participate in the
 dependency injection process.
 
-Components which do not need lifecycle can be ordinary Clojure maps.
+Components which do not need a lifecycle can be ordinary Clojure maps.
 
 You **cannot** omit just one of the `start` or `stop` methods: any
 component which implements `Lifecycle` must supply both.
@@ -551,15 +545,20 @@ components on which it depends.
 The "application" or "business logic" may itself be represented by one
 or more components.
 
-Components may, of course, implement other protocols besides
+Component records may, of course, implement other protocols besides
 `Lifecycle`.
+
+Any type of object, not just maps and records, can be a component if
+it has no lifecycle and no dependencies. For example, you could put a
+bare Atom or core.async Channel in the system map where other
+components can depend on it.
 
 Different implementations of a component (for example, a stub version
 for testing) can be injected into a system with `assoc` before calling
 `start`.
 
-Systems may be composed into larger systems, although I have not yet
-found a need for this.
+Although it is technically possible to nest systems, the consequences
+are difficult to understand. I recommend against nesting systems.
 
 
 ### Notes for Library Authors
@@ -606,13 +605,12 @@ an argument and call it on each component in the system. Along the
 way, they `assoc` in the updated dependencies of each component.
 
 The `update-system` function iterates over the components in
-dependency order (a component will be called *after* its
-dependencies). The `update-system-reverse` function goes in reverse
-dependency order (a component will be called *before* its
-dependencies).
+dependency order: a component will be called *after* its dependencies.
+The `update-system-reverse` function goes in reverse dependency order:
+a component will be called *before* its dependencies.
 
 Calling `update-system` with the `identity` function is equivalent to
-doing just the dependency injection part of 'component' without
+doing just the dependency injection part of 'Component' without
 `Lifecycle`.
 
 
@@ -630,53 +628,11 @@ doing just the dependency injection part of 'component' without
 
 
 
-## Change Log
-
-* Version 0.2.4-SNAPSHOT (in development)
-  * Current Git `master` branch
-* Version [0.2.3] released on March 3, 2015
-  * More-specific error message when a component returns `nil` from
-    `start` or `stop`: see [commit fb891500]
-* Version [0.2.2] released on September 7, 2014
-  * System maps print as `#<SystemMap>` to avoid trying to print huge
-    objects in the REPL
-  * Add error helpers `ex-component?` and `ex-without-components`
-  * Change `:component-key` to `:system-key` in `ex-data` maps:
-    breaking change for code which depended on the value of
-    `:component-key`
-  * Add `:system-key` to `ex-data` map from `try-action`
-  * Minor changes to exception message strings
-  * Leiningen profiles / aliases to test on all supported Clojure
-    versions
-* Version [0.2.1] released on December 17, 2013
-  * Add generic `system-map`
-  * More descriptive messages on exceptions
-  * Add arity-1 versions of `start-system` and `stop-system` that
-    default to all keys in the system
-* Version [0.2.0] released on November 20, 2013
-  * API compatible with 0.1.0
-  * Some exception messages changed
-  * Added default no-op implementation of Lifecycle protocol
-  * Added `update-system` and `update-system-reverse`
-  * Redefined `start-system` and `stop-system` in terms of these
-  * `stop-system` now assoc's dependencies just like `start-system`
-* Version [0.1.0] released on October 28, 2013
-
-[0.2.3]: https://github.com/stuartsierra/component/tree/component-0.2.3
-[0.2.2]: https://github.com/stuartsierra/component/tree/component-0.2.2
-[0.2.1]: https://github.com/stuartsierra/component/tree/component-0.2.1
-[0.2.0]: https://github.com/stuartsierra/component/tree/component-0.2.0
-[0.1.0]: https://github.com/stuartsierra/component/tree/component-0.1.0
-
-[commit fb891500]: https://github.com/stuartsierra/component/commit/fb891500506b048bd8d9d689dfd3ed8c0e940944
-
-
-
 ## Copyright and License
 
 The MIT License (MIT)
 
-Copyright © 2013 Stuart Sierra
+Copyright © 2015 Stuart Sierra
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
