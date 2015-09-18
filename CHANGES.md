@@ -3,7 +3,9 @@
 
 ## 0.3.x series
 
-### Version 0.3.0-SNAPSHOT (in development)
+### Git master branch at 0.3.1-SNAPSHOT
+
+### Version [0.3.0] release on September 18, 2015
 
   * API-compatible with 0.2.x
 
@@ -68,6 +70,7 @@
 ### Version [0.1.0] released on October 28, 2013
 
 
+[0.3.0]: https://github.com/stuartsierra/component/tree/component-0.3.0
 [0.2.3]: https://github.com/stuartsierra/component/tree/component-0.2.3
 [0.2.2]: https://github.com/stuartsierra/component/tree/component-0.2.2
 [0.2.1]: https://github.com/stuartsierra/component/tree/component-0.2.1
