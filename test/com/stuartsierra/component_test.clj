@@ -191,6 +191,30 @@
         ex (setup-error error)]
     (is (component/ex-component? ex))))
 
+(defrecord SourceComponent [bad-dependency])
+
+(deftest component-containing-bad-dependency-is-reported
+  (let [source-component (component/using
+                           (map->SourceComponent {})
+                           {:bad-dependency :does-not-exist})
+        ex (try (-> (component/system-map :source-component source-component)
+                    (component/start-system))
+                (catch Exception e e))
+        data (ex-data ex)]
+    (is (some? ex) "An exception must be thrown")
+    (is (= (str "Missing dependency :bad-dependency of "
+                (-> source-component type .getName)
+                " expected in system at :does-not-exist")
+           (.getMessage ex)))
+    (is (= :com.stuartsierra.component/missing-dependency
+           (:reason data)))
+    (is (= :bad-dependency
+           (:dependency-key data)))
+    (is (= :does-not-exist
+           (:system-key data)))
+    (is (= source-component
+           (:component data)))))
+
 (deftest error-is-not-from-component
   (is (not (component/ex-component? (ex-info "Boom!" {})))))
 

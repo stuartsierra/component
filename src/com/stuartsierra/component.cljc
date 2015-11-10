@@ -65,19 +65,19 @@
     component))
 
 (defn- get-dependency [system system-key component dependency-key]
-  (let [component (get system system-key ::not-found)]
-    (when (nil? component)
+  (let [dependency (get system system-key ::not-found)]
+    (when (nil? dependency)
       (throw (nil-component system system-key)))
-    (when (= ::not-found component)
+    (when (= ::not-found dependency)
       (throw (ex-info (str "Missing dependency " dependency-key
                            " of " (platform/type-name component)
                            " expected in system at " system-key)
                       {:reason ::missing-dependency
-                       :system-key key
+                       :system-key system-key
                        :dependency-key dependency-key
                        :component component
                        :system system})))
-    component))
+    dependency))
 
 (defn system-using
   "Associates dependency metadata with multiple components in the
