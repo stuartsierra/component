@@ -73,7 +73,7 @@
                            " of " (platform/type-name component)
                            " expected in system at " system-key)
                       {:reason ::missing-dependency
-                       :system-key key
+                       :system-key system-key
                        :dependency-key dependency-key
                        :component component
                        :system system})))
