@@ -288,3 +288,19 @@
                false
                (catch Exception e e))]
     (is (= ::component/nil-component (:reason (ex-data e))))))
+
+(deftest missing-dependency-error
+  (let [system-key ::system-b
+        local-key ::local-b
+        a (component/using (component-a) {local-key system-key})
+        system (component/system-map
+                :a a)
+        e (try (component/start system)
+               false
+               (catch Exception e e))
+        data (ex-data e)]
+    (is (= ::component/missing-dependency (:reason data)))
+    (is (= system-key (:system-key data)))
+    (is (= local-key (:dependency-key data)))
+    (is (= a (:component data)))
+    (is (= system (:system data)))))
