@@ -14,25 +14,25 @@ See the [video from Clojure/West 2014](https://www.youtube.com/watch?v=13cmHf_kt
 
 * I publish releases to [Clojars]
 
-* Latest stable release is [0.3.0](https://github.com/stuartsierra/component/tree/component-0.3.0)
+* Latest stable release is [0.3.1](https://github.com/stuartsierra/component/tree/component-0.3.1)
 
 * [All releases](https://clojars.org/com.stuartsierra/component)
 
 [Leiningen] dependency information:
 
-    [com.stuartsierra/component "0.3.0"]
+    [com.stuartsierra/component "0.3.1"]
 
 [Maven] dependency information:
 
     <dependency>
       <groupId>com.stuartsierra</groupId>
       <artifactId>component</artifactId>
-      <version>0.3.0</version>
+      <version>0.3.1</version>
     </dependency>
 
 [Gradle] dependency information:
 
-    compile "com.stuartsierra:component:0.3.0"
+    compile "com.stuartsierra:component:0.3.1"
 
 [Clojars]: http://clojars.org/
 [Leiningen]: http://leiningen.org/
@@ -43,8 +43,8 @@ See the [video from Clojure/West 2014](https://www.youtube.com/watch?v=13cmHf_kt
 
 ## Dependencies and Compatibility
 
-Version 0.3.0 of 'Component' requires Clojure or ClojureScript
-version 1.7.0 or later.
+Starting with version 0.3.0 of 'Component', Clojure or ClojureScript
+version 1.7.0 or higher is required for Conditional Read support.
 
 Version 0.2.3 of 'Component' is compatible with
 Clojure versions 1.4.0 and higher.

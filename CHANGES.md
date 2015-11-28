@@ -3,7 +3,12 @@
 
 ## 0.3.x series
 
-### Git master branch at 0.3.1-SNAPSHOT
+### Git master branch at 0.3.2-SNAPSHOT
+
+### Version [0.3.1] released on November 28, 2015
+
+  * Fix #40, incorrect values for `ex-data` keys in missing-dependency
+    error
 
 ### Version [0.3.0] release on September 18, 2015
 
@@ -70,6 +75,7 @@
 ### Version [0.1.0] released on October 28, 2013
 
 
+[0.3.1]: https://github.com/stuartsierra/component/tree/component-0.3.1
 [0.3.0]: https://github.com/stuartsierra/component/tree/component-0.3.0
 [0.2.3]: https://github.com/stuartsierra/component/tree/component-0.2.3
 [0.2.2]: https://github.com/stuartsierra/component/tree/component-0.2.2
