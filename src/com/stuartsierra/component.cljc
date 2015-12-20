@@ -133,8 +133,12 @@
              (try-action system key f args))))
 
 (defn- dependency-order [system component-keys]
-  (let [graph (dependency-graph system component-keys)]
-    (sort (dep/topo-comparator graph) component-keys)))
+  (let [graph (dependency-graph system component-keys)
+        ; include dependencies of requested components
+        ; as well as those without any dependencies
+        nodes (clojure.set/union (dep/nodes graph)
+                                 (set component-keys))]
+    (sort (dep/topo-comparator graph) nodes)))
 
 (defn update-system
   "Invokes (apply f component args) on each of the components at

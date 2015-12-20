@@ -228,6 +228,22 @@
   (let [system (component/start (system-2))]
     (is (started? (get-in system [:beta :one :d :my-c])))))
 
+(defn system-3 []
+  (component/system-map :b1 (component-b)
+                        :b2 (component-b)
+                        :a  (component-a)))
+
+(deftest some-components-started
+  (let [system (component/start-system (system-3) #{:b1})]
+    (is (started? (:b1 system)))
+    (is (started? (:a system)))
+    (is (not (started? (:b2 system))))))
+
+(deftest some-dependencies-satisfied
+  (let [system (component/start-system (system-3) #{:b1})]
+    (is (started? (get-in system [:b1 :a])))
+    (is (nil? (get-in system [:b2 :a])))))
+
 (defn increment-all-components [system]
   (component/update-system
    system (keys system) update-in [:n] inc))
