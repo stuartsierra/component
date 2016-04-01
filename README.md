@@ -375,7 +375,43 @@ from component names to their dependencies.
 ```
 
 
-### Example REPL Session
+### Entry Points in Production
+
+The 'component' library does not dictate how you store the system map
+or use the components it contains. That's up to you.
+
+The typical approach differs in development and production:
+
+In **production**, the system map is ephemeral. It is used to start
+all the components running, then it is discarded.
+
+When your application starts, for example in a `main` function,
+construct an instance of the system and call `component/start` on it.
+Then hand off control to one or more components that represent the
+"entry points" of your application.
+
+For example, you might have a web server component that starts
+listening for HTTP requests, or an event loop component that waits for
+input. Each of these components can create one or more threads in its
+Lifecycle `start` method. Then `main` could be as trivial as:
+
+```clojure
+(defn main [] (component/start (new-system)))
+```
+
+This also works well in conjunction with command-line drivers such as
+[Apache Commons Daemon](http://commons.apache.org/proper/commons-daemon/).
+
+
+### Entry Points for Development
+
+In **development**, it is useful to have a reference to the system map
+to examine it from the REPL.
+
+The easiest way to do this is to `def` a Var to hold the system map in
+a development namespace. Use `alter-var-root` to start and stop it.
+
+Example REPL session:
 
 ```clojure
 (def system (example-system {:host "dbhost.com" :port 123}))
@@ -397,6 +433,63 @@ from component names to their dependencies.
 ;;=> #examples.ExampleSystem{ ... }
 ```
 
+See the [reloaded] template for an more elaborate example.
+
+[reloaded]: https://github.com/stuartsierra/reloaded
+
+
+### Web Applications
+
+Many Clojure web frameworks and tutorials are designed around an
+assumption that a "handler" function exists as a global `defn`,
+without any context. With this assumption, there is no easy way to use
+any application-level context in the handler without making it also a
+global `def`.
+
+The 'component' approach assumes that any "handler" function receives
+its state/context as an argument, without depending on any global state.
+
+To reconcile these two approaches, create the "handler" function as a
+*closure* over one or more components in a Lifecycle `start` method.
+Pass this closure to the web framework as the "handler".
+
+Most web frameworks or libraries that have a static `defroutes` or
+similar macro will provide an equivalent non-static `routes` which can
+be used to create a closure.
+
+It might look something like this:
+
+```clojure
+(defn app-routes
+  "Returns the web handler function as a closure over the
+  application component."
+  [app-component]
+  ;; Instead of static 'defroutes':
+  (web-framework/routes
+   (GET "/" request (home-page app-component request))
+   (POST "/foo" request (foo-page app-component request))
+   (not-found "Not Found")))
+
+(defrecord WebServer [http-server app-component]
+  component/Lifecycle
+  (start [this]
+    (assoc this :http-server
+           (web-framework/start-http-server
+             (app-routes app-component))))
+  (stop [this]
+    (stop-http-server http-server)
+    this))
+
+(defn web-server
+  "Returns a new instance of the web server component which
+  creates its handler dynamically."
+  []
+  (component/using (map->WebServer {})
+                   [:app-component]))
+```
+
+
+## More Advanced Usage
 
 ### Errors
 
@@ -510,28 +603,7 @@ For development, I might create a `user` namespace like this:
 ```
 
 
-### Production
-
-In the deployed or production version of my application, I typically
-have a "main" function that creates and starts the top-level system.
-
-```clojure
-(ns com.example.application.main
-  (:gen-class)
-  (:require [com.stuartsierra.component :as component]
-            [examples :as app]))
-
-(defn -main [& args]
-  (let [[host port] args]
-    (component/start
-      (app/example-system {:host host :port port}))))
-```
-
-This also works well in conjunction with command-line drivers such as
-[Apache Commons Daemon](http://commons.apache.org/proper/commons-daemon/).
-
-
-### Usage Notes
+## Usage Notes
 
 The top-level "system" record is intended to be used exclusively for
 starting and stopping other components. No component in the system
