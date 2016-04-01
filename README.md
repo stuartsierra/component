@@ -133,7 +133,7 @@ component model to an existing application without major refactoring.
 
 In particular, the 'component' library assumes that all application
 state is passed as arguments to the functions that use it. As a
-result, this framework may not work well with code which relies on
+result, this framework may be awkward to use with code which relies on
 global or singleton references.
 
 For small applications, declaring the dependency relationships among
