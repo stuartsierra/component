@@ -81,11 +81,11 @@ Some examples of components:
   reference such as a Clojure Atom or Ref
 
 A *component* is similar in spirit to the definition of an *object* in
-Object-Oriented Programming. Clojure is not an object-oriented
-programming language, so we do not have to cram everything into the OO
-model. Most functions are just functions, and most data are just data.
-But real-world applications need to manage state. Components are a
-tool to help with that.
+Object-Oriented Programming. This does not alter the primacy of pure
+functions and immutable data structures in Clojure as a language. Most
+functions are just functions, and most data are just data. Components
+are intended to help manage stateful resources within a functional
+paradigm.
 
 
 ### Advantages of the Component Model
