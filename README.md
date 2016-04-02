@@ -433,7 +433,7 @@ Example REPL session:
 ;;=> #examples.ExampleSystem{ ... }
 ```
 
-See the [reloaded] template for an more elaborate example.
+See the [reloaded] template for a more elaborate example.
 
 [reloaded]: https://github.com/stuartsierra/reloaded
 
