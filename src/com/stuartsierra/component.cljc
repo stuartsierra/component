@@ -152,15 +152,47 @@
             system
             (reverse (sort (dep/topo-comparator graph) component-keys)))))
 
+(defn- start-with-pred
+  "Starts a component and associates a started? key if it
+   successfully starts."
+  [component]
+  (-> component start (assoc :started? true)))
+
+(defn- stop-with-pred
+  "Stops a component and dissasociates a started? key if it
+   successfully stops."
+  [component]
+  (-> component stop (assoc :started? false)))
+
+(defn started?
+  "Determines if the component is in a started state."
+  [component]
+  (boolean (:started? component)))
+
+(defn stopped?
+  "Determines if the given component is in a stopped state."
+  [component]
+  (not (started? component)))
+
 (defn start-system
   "Recursively starts components in the system, in dependency order,
   assoc'ing in their dependencies along the way. component-keys is a
   collection of keys (order doesn't matter) in the system specifying
-  the components to start, defaults to all keys in the system."
+  the components to start, defaults to all keys in the system. If
+  an exception is thrown, it'll tear down the system and ensure any
+  components that were started are stopped."
   ([system]
      (start-system system (keys system)))
   ([system component-keys]
-     (update-system system component-keys #'start)))
+   (try
+     (update-system system component-keys start-with-pred)
+     (catch Throwable e
+       (let [thrown-system (-> e ex-data :system)
+             started-keys (->> thrown-system
+                               (filter (fn [[k v]] (started? v)))
+                               (keys))]
+         (update-system-reverse thrown-system started-keys stop-with-pred))
+       (throw e)))))
 
 (defn stop-system
   "Recursively stops components in the system, in reverse dependency
@@ -168,9 +200,9 @@
   in the system specifying the components to stop, defaults to all
   keys in the system."
   ([system]
-     (stop-system system (keys system)))
+   (stop-system system (keys system)))
   ([system component-keys]
-     (update-system-reverse system component-keys #'stop)))
+   (update-system-reverse system component-keys stop-with-pred)))
 
 (defrecord SystemMap []
   Lifecycle
