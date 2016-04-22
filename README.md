@@ -399,6 +399,12 @@ Lifecycle `start` method. Then `main` could be as trivial as:
 (defn main [] (component/start (new-system)))
 ```
 
+**Note:** You will still need to keep the main thread of your
+application running to prevent the JVM from shutting down. One way is
+to block the main thread waiting for some signal to shut down; another
+way is to `Thread/join` the main thread to one of your components'
+threads.
+
 This also works well in conjunction with command-line drivers such as
 [Apache Commons Daemon](http://commons.apache.org/proper/commons-daemon/).
 
