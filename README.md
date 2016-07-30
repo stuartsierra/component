@@ -24,11 +24,13 @@ See the [video from Clojure/West 2014](https://www.youtube.com/watch?v=13cmHf_kt
 
 [Maven] dependency information:
 
+```xml
     <dependency>
       <groupId>com.stuartsierra</groupId>
       <artifactId>component</artifactId>
       <version>0.3.1</version>
     </dependency>
+```
 
 [Gradle] dependency information:
 
@@ -329,7 +331,7 @@ dependencies based on the metadata provided by `using`.
 Again using the example above, the ExampleComponent would be started
 *as if* you did this:
 
-```
+```clojure
 (-> example-component
     (assoc :database (:db system))
     (assoc :scheduler (:sched system))
