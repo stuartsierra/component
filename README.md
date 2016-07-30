@@ -25,11 +25,11 @@ See the [video from Clojure/West 2014](https://www.youtube.com/watch?v=13cmHf_kt
 [Maven] dependency information:
 
 ```xml
-    <dependency>
-      <groupId>com.stuartsierra</groupId>
-      <artifactId>component</artifactId>
-      <version>0.3.1</version>
-    </dependency>
+<dependency>
+    <groupId>com.stuartsierra</groupId>
+    <artifactId>component</artifactId>
+    <version>0.3.1</version>
+</dependency>
 ```
 
 [Gradle] dependency information:
