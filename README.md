@@ -611,14 +611,43 @@ For development, I might create a `user` namespace like this:
 
 ## Usage Notes
 
-The top-level "system" record is intended to be used exclusively for
-starting and stopping other components. No component in the system
-should depend directly on its parent system.
 
-I do not intend that application functions should receive the
-top-level system as an argument. Rather, functions are defined in
-terms of components. Each component receives references only to the
-components on which it depends.
+### Do not pass the system around
+
+The top-level "system" record is used only for starting and stopping
+other components, and for convenience during interactive development.
+
+See "Entry Points in ..." above.
+
+
+### No function should take the entire system as an argument
+
+Application functions should never receive the whole system as an
+argument. This is unnecessary sharing of global state.
+
+Rather, each function should be defined in terms of **at most one**
+component.
+
+If a function depends on several components, then it should have its
+own component with dependencies on the things it needs.
+
+
+### No component should be aware of the system which contains it
+
+Each component receives references only to the components on which it
+depends.
+
+
+### Do not nest systems
+
+It's technically possible to nest one `system-map` in another, but the
+effects on dependencies are subtle and confusing.
+
+Instead, give all your components unique keys and merge them into one
+system.
+
+
+### Other kinds of components
 
 The "application" or "business logic" may itself be represented by one
 or more components.
@@ -631,12 +660,12 @@ it has no lifecycle and no dependencies. For example, you could put a
 bare Atom or core.async Channel in the system map where other
 components can depend on it.
 
+
+### Test doubles
+
 Different implementations of a component (for example, a stub version
 for testing) can be injected into a system with `assoc` before calling
 `start`.
-
-Although it is technically possible to nest systems, the consequences
-are difficult to understand. I recommend against nesting systems.
 
 
 ### Notes for Library Authors
