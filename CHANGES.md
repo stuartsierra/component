@@ -7,12 +7,13 @@
 
 ### Version [0.3.2] released on December 12, 2016
 
-  * Fix incorrect base class for extending Lifecycle (commit 69e62854c7)
+  * Fix incorrect base class for extending Lifecycle
+    ([commit 69e62854]; reported by Tim Pote)
 
 ### Version [0.3.1] released on November 28, 2015
 
-  * Fix #40, incorrect values for `ex-data` keys in missing-dependency
-    error
+  * Fix incorrect values for `ex-data` keys in missing-dependency
+    error (reported by Howard Lewis Ship at [#40])
 
 ### Version [0.3.0] release on September 18, 2015
 
@@ -29,12 +30,13 @@
 ### Version [0.2.3] released on March 3, 2015
 
   * More-specific error message when a component returns `nil` from
-    `start` or `stop`: see [commit fb891500]
+    `start` or `stop` ([commit fb891500]; reported by James Gatannah
+    at [#17])
 
 ### Version [0.2.2] released on September 7, 2014
 
   * System maps print as `#<SystemMap>` to avoid trying to print huge
-    objects in the REPL
+    objects in the REPL (reported by Howard Lewis Ship at [#9])
 
   * Add error helpers `ex-component?` and `ex-without-components`
 
@@ -89,6 +91,11 @@
 [0.1.0]: https://github.com/stuartsierra/component/tree/component-0.1.0
 
 [commit fb891500]: https://github.com/stuartsierra/component/commit/fb891500506b048bd8d9d689dfd3ed8c0e940944
+[commit 69e62854]: https://github.com/stuartsierra/component/commit/69e62854c7dac7b4743a542e04ce4aa23a934c07
+
+[#9]: https://github.com/stuartsierra/component/issues/9
+[#17]: https://github.com/stuartsierra/component/issues/17
+[#40]: https://github.com/stuartsierra/component/issues/40
 
 [dependency]: https://github.com/stuartsierra/dependency
 [tools.namespace]: https://github.com/clojure/tools.namespace
