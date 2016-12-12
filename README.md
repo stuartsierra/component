@@ -14,25 +14,25 @@ See the [video from Clojure/West 2014](https://www.youtube.com/watch?v=13cmHf_kt
 
 * I publish releases to [Clojars]
 
-* Latest stable release is [0.3.1](https://github.com/stuartsierra/component/tree/component-0.3.1)
+* Latest stable release is [0.3.2](https://github.com/stuartsierra/component/tree/component-0.3.2)
 
 * [All releases](https://clojars.org/com.stuartsierra/component)
 
 [Leiningen] dependency information:
 
-    [com.stuartsierra/component "0.3.1"]
+    [com.stuartsierra/component "0.3.2"]
 
 [Maven] dependency information:
 
     <dependency>
       <groupId>com.stuartsierra</groupId>
       <artifactId>component</artifactId>
-      <version>0.3.1</version>
+      <version>0.3.2</version>
     </dependency>
 
 [Gradle] dependency information:
 
-    compile "com.stuartsierra:component:0.3.1"
+    compile "com.stuartsierra:component:0.3.2"
 
 [Clojars]: http://clojars.org/
 [Leiningen]: http://leiningen.org/

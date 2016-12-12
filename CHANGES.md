@@ -3,7 +3,11 @@
 
 ## 0.3.x series
 
-### Git master branch at 0.3.2-SNAPSHOT
+### Git master branch at 0.3.3-SNAPSHOT
+
+### Version [0.3.2] released on December 12, 2016
+
+  * Fix incorrect base class for extending Lifecycle (commit 69e62854c7)
 
 ### Version [0.3.1] released on November 28, 2015
 
