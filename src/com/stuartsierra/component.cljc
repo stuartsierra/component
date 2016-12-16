@@ -126,31 +126,35 @@
                           :system system}
                          t)))))
 
+(defn- update-system-key [system key f args]
+  (assoc system key
+         (-> (get-component system key)
+             (assoc-dependencies system)
+             (try-action system key f args))))
+
+(defn- dependency-order [system component-keys]
+  (let [graph (dependency-graph system component-keys)
+        ; include dependencies of requested components
+        ; as well as those without any dependencies
+        nodes (clojure.set/union (dep/nodes graph)
+                                 (set component-keys))]
+    (sort (dep/topo-comparator graph) nodes)))
+
 (defn update-system
   "Invokes (apply f component args) on each of the components at
   component-keys in the system, in dependency order. Before invoking
   f, assoc's updated dependencies of the component."
   [system component-keys f & args]
-  (let [graph (dependency-graph system component-keys)]
-    (reduce (fn [system key]
-              (assoc system key
-                     (-> (get-component system key)
-                         (assoc-dependencies system)
-                         (try-action system key f args))))
-            system
-            (sort (dep/topo-comparator graph) component-keys))))
+  (reduce #(update-system-key %1 %2 f args)
+          system
+          (dependency-order system component-keys)))
 
 (defn update-system-reverse
   "Like update-system but operates in reverse dependency order."
   [system component-keys f & args]
-  (let [graph (dependency-graph system component-keys)]
-    (reduce (fn [system key]
-              (assoc system key
-                     (-> (get-component system key)
-                         (assoc-dependencies system)
-                         (try-action system key f args))))
-            system
-            (reverse (sort (dep/topo-comparator graph) component-keys)))))
+  (reduce #(update-system-key %1 %2 f args)
+          system
+          (reverse (dependency-order system component-keys))))
 
 (defn start-system
   "Recursively starts components in the system, in dependency order,
