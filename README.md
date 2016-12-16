@@ -605,7 +605,7 @@ For development, I might create a `user` namespace like this:
 
 (defn reset []
   (stop)
-  (refresh :after 'user/go))
+  (refresh :after `user/go))
 ```
 
 
