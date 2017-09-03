@@ -126,31 +126,31 @@
                           :system system}
                          t)))))
 
+(defn- update-system*
+  "Invokes (apply f component args) on each of the components at
+  component-keys in the system, in dependency order. Before invoking
+  f, assoc's updated dependencies of the component."
+  [update-f system component-keys f args]
+  (let [graph (dependency-graph system component-keys)]
+    (reduce (fn [system key]
+              (assoc system key
+                     (-> (get-component system key)
+                         (assoc-dependencies system)
+                         (try-action system key f args))))
+            system
+            (update-f (sort (dep/topo-comparator graph) component-keys)))))
+
 (defn update-system
   "Invokes (apply f component args) on each of the components at
   component-keys in the system, in dependency order. Before invoking
   f, assoc's updated dependencies of the component."
   [system component-keys f & args]
-  (let [graph (dependency-graph system component-keys)]
-    (reduce (fn [system key]
-              (assoc system key
-                     (-> (get-component system key)
-                         (assoc-dependencies system)
-                         (try-action system key f args))))
-            system
-            (sort (dep/topo-comparator graph) component-keys))))
+  (update-system* identity system component-keys f args))
 
 (defn update-system-reverse
   "Like update-system but operates in reverse dependency order."
   [system component-keys f & args]
-  (let [graph (dependency-graph system component-keys)]
-    (reduce (fn [system key]
-              (assoc system key
-                     (-> (get-component system key)
-                         (assoc-dependencies system)
-                         (try-action system key f args))))
-            system
-            (reverse (sort (dep/topo-comparator graph) component-keys)))))
+  (update-system* reverse system component-keys f args))
 
 (defn start-system
   "Recursively starts components in the system, in dependency order,
