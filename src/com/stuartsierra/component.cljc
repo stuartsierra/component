@@ -32,7 +32,11 @@
   provided by its containing system. Values in the map are the keys in
   the system at which those components may be found. Alternatively, if
   the keys are the same in both the component and its enclosing
-  system, they may be specified as a vector of keys."
+  system, they may be specified as a vector of keys.
+  Shorthand syntax is supported to allow for aliasing only selected dependencies.
+  Thus the following are equivalent:
+  {:a :a :b :c}
+  [:a {:b :c}]"
   [component dependencies]
   (vary-meta
    component update-in [::dependencies] (fnil merge {})
@@ -40,7 +44,11 @@
     (map? dependencies)
       dependencies
     (vector? dependencies)
-      (into {} (map (fn [x] [x x]) dependencies))
+      (into {} (map (fn [x]
+                      (if (map? x)
+                        (vec (flatten (seq x)))
+                        [x x]))
+                    dependencies))
     :else
       (throw (ex-info "Dependencies must be a map or vector"
                       {:reason ::invalid-dependencies
