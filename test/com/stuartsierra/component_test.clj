@@ -304,3 +304,57 @@
     (is (= local-key (:dependency-key data)))
     (is (= a (:component data)))
     (is (= system (:system data)))))
+
+(defn protocols-extentable-via-metadata? []
+  (let [{:keys [major minor]} *clojure-version*]
+    (and (= major 1)
+         (>= minor 10))))
+
+(when (protocols-extentable-via-metadata?)
+  (def ComponentF (with-meta {:state (rand-int Integer/MAX_VALUE)}
+                             {`component/start (fn [this]
+                                                 (log 'ComponentF.start this)
+                                                 (assoc this ::started? true))
+                              `component/stop (fn [this]
+                                                (log 'ComponentF.start this)
+                                                (assoc this ::started? false))}))
+
+  (defn component-g
+    [x y]
+    (with-meta {:state (rand-int Integer/MAX_VALUE)
+                :x x
+                :y y}
+               {`component/start (fn [this]
+                                   (log 'ComponentG.start this)
+                                   (assoc this ::started? true))
+                `component/stop (fn [this]
+                                  (log 'ComponentG.start this)
+                                  (assoc this ::started? false))}))
+
+  (defrecord System3 [d f a e c g b]                          ; deliberately scrambled order
+    component/Lifecycle
+    (start [this]
+      (log 'System1.start this)
+      (component/start-system this))
+    (stop [this]
+      (log 'System1.stop this)
+      (component/stop-system this)))
+
+  (defn system-3 []
+    (map->System3 {:a (component-a)
+                   :b (component-b)
+                   :c (component-c)
+                   :d (component/using (component-d)
+                                       {:b :b
+                                        :my-c :c})
+                   :e (component/using (component-e)
+                                       {:my-f :f})
+                   :f (component/using ComponentF
+                                       {:my-g :g})
+                   :g (component-g {:some :x-map} [:vector :of :ys])}))
+
+  (deftest all-components-started-with-metadata
+    (let [system (component/start (system-3))]
+      (doseq [component (vals system)]
+        (is (started? component))))))
+
