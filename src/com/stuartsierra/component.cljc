@@ -3,6 +3,7 @@
             [com.stuartsierra.component.platform :as platform]))
 
 (defprotocol Lifecycle
+  :extend-via-metadata true
   (start [component]
     "Begins operation of this component. Synchronous, does not return
   until the component is started. Returns an updated version of this
