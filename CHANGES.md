@@ -1,9 +1,18 @@
 # Component Change Log
 
 
-## 0.3.x series
+## 0.4.x series
 
-### Git master branch at 0.3.3-SNAPSHOT
+### Version [0.4.0] released on December 30, 2018
+
+  * Add `:extend-via-metadata` to Lifecycle protocol
+    for Clojure 1.10 [extend-via-metadata].
+    Backwards-compatible with earlier Clojure versions.
+    ([commmit 7824f551]; suggested by Joe Lane in [#62]).
+
+
+
+## 0.3.x series
 
 ### Version [0.3.2] released on December 12, 2016
 
@@ -81,6 +90,7 @@
 ### Version [0.1.0] released on October 28, 2013
 
 
+[0.4.0]: https://github.com/stuartsierra/component/tree/component-0.4.0
 [0.3.2]: https://github.com/stuartsierra/component/tree/component-0.3.2
 [0.3.1]: https://github.com/stuartsierra/component/tree/component-0.3.1
 [0.3.0]: https://github.com/stuartsierra/component/tree/component-0.3.0
@@ -92,10 +102,14 @@
 
 [commit fb891500]: https://github.com/stuartsierra/component/commit/fb891500506b048bd8d9d689dfd3ed8c0e940944
 [commit 69e62854]: https://github.com/stuartsierra/component/commit/69e62854c7dac7b4743a542e04ce4aa23a934c07
+[commit 7824f551]: https://github.com/stuartsierra/component/commit/7824f55129337c775a776daf6286fd43b8911b38
 
 [#9]: https://github.com/stuartsierra/component/issues/9
 [#17]: https://github.com/stuartsierra/component/issues/17
 [#40]: https://github.com/stuartsierra/component/issues/40
+[#62]: https://github.com/stuartsierra/component/pull/62
 
 [dependency]: https://github.com/stuartsierra/dependency
 [tools.namespace]: https://github.com/clojure/tools.namespace
+
+[extend-via-metadata]: https://github.com/clojure/clojure/blob/28b87d53909774af28f9f9ba6dfa2d4b94194a57/changes.md#22-protocol-extension-by-metadata
