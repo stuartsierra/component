@@ -3,6 +3,8 @@
 
 ## 0.4.x series
 
+(Git master branch at 0.4.1-SNAPSHOT)
+
 ### Version [0.4.0] released on December 30, 2018
 
   * Add `:extend-via-metadata` to Lifecycle protocol
