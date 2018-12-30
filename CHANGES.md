@@ -10,8 +10,7 @@
   * Add `:extend-via-metadata` to Lifecycle protocol
     for Clojure 1.10 [extend-via-metadata].
     Backwards-compatible with earlier Clojure versions.
-    ([commmit 7824f551]; suggested by Joe Lane in [#62]).
-
+    ([commit 7824f551]; suggested by Joe Lane in [#62]).
 
 
 ## 0.3.x series
