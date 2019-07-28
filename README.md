@@ -329,7 +329,7 @@ dependencies based on the metadata provided by `using`.
 Again using the example above, the ExampleComponent would be started
 *as if* you did this:
 
-```
+```clojure
 (-> example-component
     (assoc :database (:db system))
     (assoc :scheduler (:sched system))
