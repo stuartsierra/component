@@ -18,6 +18,8 @@ See the [video from Clojure/West 2014](https://www.youtube.com/watch?v=13cmHf_kt
 
 * [All releases](https://clojars.org/com.stuartsierra/component)
 
+* [Change Log](CHANGES.md)
+
 [Leiningen] dependency information:
 
     [com.stuartsierra/component "0.4.0"]
