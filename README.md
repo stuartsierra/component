@@ -14,7 +14,7 @@ See the [video from Clojure/West 2014](https://www.youtube.com/watch?v=13cmHf_kt
 
 * I publish releases to [Clojars]
 
-* Latest stable release is [0.4.0](https://github.com/stuartsierra/component/tree/component-0.4.0)
+* Latest stable release is [0.4.1](https://github.com/stuartsierra/component/tree/component-0.4.1)
 
 * [All releases](https://clojars.org/com.stuartsierra/component)
 
@@ -22,19 +22,19 @@ See the [video from Clojure/West 2014](https://www.youtube.com/watch?v=13cmHf_kt
 
 [Leiningen] dependency information:
 
-    [com.stuartsierra/component "0.4.0"]
+    [com.stuartsierra/component "0.4.1"]
 
 [Maven] dependency information:
 
     <dependency>
       <groupId>com.stuartsierra</groupId>
       <artifactId>component</artifactId>
-      <version>0.4.0</version>
+      <version>0.4.1</version>
     </dependency>
 
 [Gradle] dependency information:
 
-    compile "com.stuartsierra:component:0.4.0"
+    compile "com.stuartsierra:component:0.4.1"
 
 [Clojars]: http://clojars.org/
 [Leiningen]: http://leiningen.org/

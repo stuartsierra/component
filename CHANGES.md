@@ -3,7 +3,17 @@
 
 ## 0.4.x series
 
-(Git master branch at 0.4.1-SNAPSHOT)
+(Git master branch at 0.4.2-SNAPSHOT)
+
+### Version [0.4.1] released on July 28, 2018
+
+  * Modify Clojure dependency to be `:scope "provided"`
+    to prevent spurious warnings when overridden by a
+    later version. Note that this also prevents warnings
+    when overridden by an **earlier, incompatible**
+    version of Clojure. Component since version 0.3.0
+    requires Clojure 1.7.0 or later.
+    ([commit 5af4ad06]; reported by Dave Yarwood in [#65]).
 
 ### Version [0.4.0] released on December 30, 2018
 
@@ -96,6 +106,7 @@
 ### Version [0.1.0] released on October 28, 2013
 
 
+[0.4.1]: https://github.com/stuartsierra/component/tree/component-0.4.1
 [0.4.0]: https://github.com/stuartsierra/component/tree/component-0.4.0
 [0.3.2]: https://github.com/stuartsierra/component/tree/component-0.3.2
 [0.3.1]: https://github.com/stuartsierra/component/tree/component-0.3.1
@@ -109,13 +120,17 @@
 [commit fb891500]: https://github.com/stuartsierra/component/commit/fb891500506b048bd8d9d689dfd3ed8c0e940944
 [commit 69e62854]: https://github.com/stuartsierra/component/commit/69e62854c7dac7b4743a542e04ce4aa23a934c07
 [commit 7824f551]: https://github.com/stuartsierra/component/commit/7824f55129337c775a776daf6286fd43b8911b38
+[commit 5af4ad06]: https://github.com/stuartsierra/component/commit/5af4ad06fdc3ff3240573ae9394da92d8cf90c7e
 
 [#9]: https://github.com/stuartsierra/component/issues/9
 [#17]: https://github.com/stuartsierra/component/issues/17
 [#40]: https://github.com/stuartsierra/component/issues/40
 [#62]: https://github.com/stuartsierra/component/pull/62
+[#63]: https://github.com/stuartsierra/component/issues/63
+[#65]: https://github.com/stuartsierra/component/issues/65
 
 [dependency]: https://github.com/stuartsierra/dependency
 [tools.namespace]: https://github.com/clojure/tools.namespace
 
 [extend-via-metadata]: https://github.com/clojure/clojure/blob/28b87d53909774af28f9f9ba6dfa2d4b94194a57/changes.md#22-protocol-extension-by-metadata
+[ClojureScript 1.10.516]: https://github.com/clojure/clojurescript/blob/8a5abc4e02c72d000204674f38c6665c786302a4/changes.md
