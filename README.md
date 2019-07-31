@@ -670,7 +670,7 @@ for testing) can be injected into a system with `assoc` before calling
 
 ### Notes for Library Authors
 
-'Component' is intended as a tool for applications, not resuable
+'Component' is intended as a tool for applications, not reusable
 libraries. I would not expect a general-purpose library to impose any
 particular framework on the applications which use it.
 
