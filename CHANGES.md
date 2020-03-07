@@ -1,11 +1,9 @@
 # Component Change Log
 
 
-## 0.4.x series
+## 1.0.x series
 
-(Git master branch at 0.4.2-SNAPSHOT)
-
-### Version [0.4.1] released on July 28, 2018
+### Version [1.0.0] released on March 7, 2020
 
   * Modify Clojure dependency to be `:scope "provided"`
     to prevent spurious warnings when overridden by a
@@ -14,6 +12,12 @@
     version of Clojure. Component since version 0.3.0
     requires Clojure 1.7.0 or later.
     ([commit 5af4ad06]; reported by Dave Yarwood in [#65]).
+
+  * Update 'dependency' library to version 1.0.0
+
+
+
+## 0.4.x series
 
 ### Version [0.4.0] released on December 30, 2018
 
@@ -106,7 +110,7 @@
 ### Version [0.1.0] released on October 28, 2013
 
 
-[0.4.1]: https://github.com/stuartsierra/component/tree/component-0.4.1
+[1.0.0]: https://github.com/stuartsierra/component/tree/component-1.0.0
 [0.4.0]: https://github.com/stuartsierra/component/tree/component-0.4.0
 [0.3.2]: https://github.com/stuartsierra/component/tree/component-0.3.2
 [0.3.1]: https://github.com/stuartsierra/component/tree/component-0.3.1
