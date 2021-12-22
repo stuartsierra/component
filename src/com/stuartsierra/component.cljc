@@ -154,20 +154,22 @@
             (reverse (sort (dep/topo-comparator graph) component-keys)))))
 
 (defn start-system
-  "Recursively starts components in the system, in dependency order,
-  assoc'ing in their dependencies along the way. component-keys is a
-  collection of keys (order doesn't matter) in the system specifying
-  the components to start, defaults to all keys in the system."
+  "Recursively starts all components in the system, in dependency
+  order, assoc'ing in their dependencies along the way.
+
+  The 2-argument arity selects which components to start, but this is
+  a historical implementation detail. Use `subsystem` instead."
   ([system]
      (start-system system (keys system)))
   ([system component-keys]
      (update-system system component-keys #'start)))
 
 (defn stop-system
-  "Recursively stops components in the system, in reverse dependency
-  order. component-keys is a collection of keys (order doesn't matter)
-  in the system specifying the components to stop, defaults to all
-  keys in the system."
+  "Recursively stops all components in the system, in reverse
+  dependency order.
+
+  The 2-argument arity selects which components to start, but this is
+  a historical implementation detail. Use `subsystem` instead."
   ([system]
      (stop-system system (keys system)))
   ([system component-keys]
