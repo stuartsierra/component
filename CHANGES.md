@@ -1,6 +1,15 @@
 # Component Change Log
 
 
+## 1.1.x series
+
+### Version [1.1.0] released on February 26, 2022
+
+  * Add `subsystem`
+    (motivated by conversations in [#69] and elsewhere)
+
+
+
 ## 1.0.x series
 
 ### Version [1.0.0] released on March 7, 2020
@@ -110,6 +119,7 @@
 ### Version [0.1.0] released on October 28, 2013
 
 
+[1.1.0]: https://github.com/stuartsierra/component/tree/component-1.1.0
 [1.0.0]: https://github.com/stuartsierra/component/tree/component-1.0.0
 [0.4.0]: https://github.com/stuartsierra/component/tree/component-0.4.0
 [0.3.2]: https://github.com/stuartsierra/component/tree/component-0.3.2
@@ -132,6 +142,7 @@
 [#62]: https://github.com/stuartsierra/component/pull/62
 [#63]: https://github.com/stuartsierra/component/issues/63
 [#65]: https://github.com/stuartsierra/component/issues/65
+[#69]: https://github.com/stuartsierra/component/issues/69
 
 [dependency]: https://github.com/stuartsierra/dependency
 [tools.namespace]: https://github.com/clojure/tools.namespace
