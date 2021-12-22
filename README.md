@@ -611,6 +611,24 @@ For development, I might create a `user` namespace like this:
 ```
 
 
+### Subsystems
+
+What if you want to start just some of the components in your system?
+
+Systems are not designed to be in a "partially started" state, and the
+consequences are confusing.
+
+Instead, create a new system containing just the components you
+need. The `subsystem` function (added in 1.1.0) acts like Clojure's
+`select-keys` function, but for systems, and it automatically includes
+all transitive dependencies.
+
+Note: Although the `start-system` function takes an argument naming
+the components to be started, this is more of an implementation
+detail. It does **not** take dependencies into account.  Use
+`subsystem` and `start` instead.
+
+
 ## Usage Notes
 
 
