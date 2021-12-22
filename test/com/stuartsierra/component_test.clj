@@ -304,3 +304,14 @@
     (is (= local-key (:dependency-key data)))
     (is (= a (:component data)))
     (is (= system (:system data)))))
+
+(deftest t-subsystem
+  (let [system (component/system-map
+                :d (component-d)
+                :e (component-e)
+                :f (component/using {} [:d])
+                :g (component/using {} [:f]))
+        subsystem (component/subsystem system [:g])]
+    (is (= (type system)
+           (type subsystem)))
+    (is (= #{:d :f :g} (set (keys subsystem))))))
