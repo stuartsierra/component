@@ -207,6 +207,17 @@
             "system-map requires an even number of arguments")))
   (map->SystemMap (apply array-map keyvals)))
 
+(defn subsystem
+  "Returns a system containing only components associated with the keys
+  in subsystem-keys, along with all of their transitive dependencies."
+  [system subsystem-keys]
+  (let [graph (dependency-graph system (keys system))
+        selected (into (set subsystem-keys)
+                       (mapcat #(dep/transitive-dependencies graph %))
+                       subsystem-keys)]
+    (merge (system-map)
+           (select-keys system selected))))
+
 (defn ex-component?
   "True if the error has ex-data indicating it was thrown by something
   in the com.stuartsierra.component namespace."
