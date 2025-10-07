@@ -205,7 +205,7 @@
   'read'. To disable this behavior and print system maps like normal
   records, call
   (remove-method clojure.core/print-method com.stuartsierra.component.SystemMap)"
-  [& keyvals]
+  ^com.stuartsierra.component.SystemMap [& keyvals]
   ;; array-map doesn't check argument length (CLJ-1319)
   (when-not (even? (count keyvals))
     (throw (platform/argument-error
