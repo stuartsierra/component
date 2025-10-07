@@ -180,7 +180,10 @@
   (start [system]
     (start-system system))
   (stop [system]
-    (stop-system system)))
+    (stop-system system))
+  java.lang.AutoCloseable
+  (close [system]
+    (stop system)))
 
 #?(:clj
    (defmethod clojure.core/print-method SystemMap
