@@ -181,9 +181,9 @@
     (start-system system))
   (stop [system]
     (stop-system system))
-  java.lang.AutoCloseable
-  (close [system]
-    (stop system)))
+  #?@(:clj [java.io.Closeable
+            (close [system]
+                   (stop system))]))
 
 #?(:clj
    (defmethod clojure.core/print-method SystemMap
