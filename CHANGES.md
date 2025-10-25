@@ -1,6 +1,25 @@
 # Component Change Log
 
 
+## 1.2.x series
+
+### Version [1.2.0] released on October 25, 2025
+
+  * Add implementation of `java.io.Closeable` on `SystemMap`,
+    so `.close` on a system calls `component/stop`.
+    See [#76].
+
+    This allows use of [with-open](https://clojure.github.io/clojure/clojure.core-api.html#clojure.core/with-open)
+    on systems, for example `(with-open [system (start system)] ...)`
+    in tests.
+
+    Fulfulls a similar purpose as the various `with-*` macros
+    proposed in [#6], [#7], and elsewhere.
+    Also inspired by a conversation with [Ian Fernandez](https://github.com/ianffcs)
+    at [Clojure South 2025](https://clojure-south.com/).
+
+
+
 ## 1.1.x series
 
 ### Version [1.1.0] released on February 26, 2022
@@ -119,6 +138,7 @@
 ### Version [0.1.0] released on October 28, 2013
 
 
+[1.2.0]: https://github.com/stuartsierra/component/tree/component-1.2.0
 [1.1.0]: https://github.com/stuartsierra/component/tree/component-1.1.0
 [1.0.0]: https://github.com/stuartsierra/component/tree/component-1.0.0
 [0.4.0]: https://github.com/stuartsierra/component/tree/component-0.4.0
@@ -136,6 +156,8 @@
 [commit 7824f551]: https://github.com/stuartsierra/component/commit/7824f55129337c775a776daf6286fd43b8911b38
 [commit 5af4ad06]: https://github.com/stuartsierra/component/commit/5af4ad06fdc3ff3240573ae9394da92d8cf90c7e
 
+[#6]: https://github.com/stuartsierra/component/issues/6
+[#7]: https://github.com/stuartsierra/component/issues/7
 [#9]: https://github.com/stuartsierra/component/issues/9
 [#17]: https://github.com/stuartsierra/component/issues/17
 [#40]: https://github.com/stuartsierra/component/issues/40
@@ -143,6 +165,7 @@
 [#63]: https://github.com/stuartsierra/component/issues/63
 [#65]: https://github.com/stuartsierra/component/issues/65
 [#69]: https://github.com/stuartsierra/component/issues/69
+[#76]: https://github.com/stuartsierra/component/pull/76
 
 [dependency]: https://github.com/stuartsierra/dependency
 [tools.namespace]: https://github.com/clojure/tools.namespace
