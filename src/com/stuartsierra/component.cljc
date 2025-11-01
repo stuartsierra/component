@@ -196,7 +196,7 @@
        (-write writer "#<SystemMap>"))))
 
 (defn system-map
-  "Returns a system constructed of key/value pairs. The system has
+  "Returns a system constructed of key/value pairs or a map. The system has
   default implementations of the Lifecycle 'start' and 'stop' methods
   which recursively start/stop all components in the system.
 
@@ -205,12 +205,8 @@
   'read'. To disable this behavior and print system maps like normal
   records, call
   (remove-method clojure.core/print-method com.stuartsierra.component.SystemMap)"
-  [& keyvals]
-  ;; array-map doesn't check argument length (CLJ-1319)
-  (when-not (even? (count keyvals))
-    (throw (platform/argument-error
-            "system-map requires an even number of arguments")))
-  (map->SystemMap (apply array-map keyvals)))
+  [& {:as sys-map}]
+  (map->SystemMap sys-map))
 
 (defn subsystem
   "Returns a system containing only components associated with the keys

@@ -228,6 +228,14 @@
   (let [system (component/start (system-2))]
     (is (started? (get-in system [:beta :one :d :my-c])))))
 
+
+(deftest map->system
+  (let [system (component/start (component/system-map {:a (component-a)
+                                                       :b (component-b)}))]
+    (is (started? (get-in system [:a])))
+    (is (started? (get-in system [:b])))))
+
+
 (defn increment-all-components [system]
   (component/update-system
    system (keys system) update-in [:n] inc))
